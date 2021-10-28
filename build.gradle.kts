@@ -1,11 +1,11 @@
 plugins {
     kotlin("jvm") version "1.5.31"
     kotlin("plugin.serialization") version "1.5.31" apply true
-
+    jacoco
 }
 
 group = "io.github.abaddon.kcqrs"
-version = "1.0-SNAPSHOT"
+version = "0.0.1-SNAPSHOT"
 
 //Versions
 val slf4jVersion = "1.7.25"
@@ -24,16 +24,17 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutineVersion")
 
-
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:${junitJupiterVersion}") // JVM dependency
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutineVersion")
 
 }
 
-//tasks.test {
-//    useJUnitPlatform()
-//}
+jacoco {
+    toolVersion = "0.8.7"
+    //reportsDirectory.set(layout.buildDirectory.dir("customJacocoReportDir"))
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
     testLogging {
@@ -41,7 +42,17 @@ tasks.withType<Test> {
     }
 }
 
+//tasks.jacocoTestReport {
+//    reports {
+//        xml.required.set(true)
+//        csv.required.set(false)
+//        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+//    }
+//}
+//
+
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
     kotlinOptions.jvmTarget = "11"
 }
+
 
