@@ -5,6 +5,7 @@ import io.github.abaddon.kcqrs.core.IIdentity
 import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
 import java.util.*
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
 
 interface IRepository {
 

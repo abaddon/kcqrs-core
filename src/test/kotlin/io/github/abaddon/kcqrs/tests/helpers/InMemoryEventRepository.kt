@@ -1,4 +1,4 @@
-package io.github.abaddon.kcqrs_test
+package io.github.abaddon.kcqrs.tests.helpers
 
 import io.github.abaddon.kcqrs.core.IAggregate
 import io.github.abaddon.kcqrs.core.IIdentity
@@ -6,6 +6,7 @@ import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
 import io.github.abaddon.kcqrs.core.persistence.IRepository
 import java.util.*
 import kotlin.reflect.KClass
+import kotlin.reflect.full.createInstance
 
 class InMemoryEventRepository : IRepository {
 
@@ -21,6 +22,7 @@ class InMemoryEventRepository : IRepository {
         aggregateId: IIdentity,
         klass: KClass<TAggregate>
     ): TAggregate {
+
         return getById(aggregateId, 0, klass)
     }
 
@@ -29,12 +31,12 @@ class InMemoryEventRepository : IRepository {
         version: Int,
         klass: KClass<TAggregate>
     ): TAggregate {
-        val emptyAggregate = createAggregate(klass::class.java)
+        val emptyAggregate = createAggregate(klass)
         return givenEvents.fold2(emptyAggregate)
     }
 
-    fun <TAggregate : IAggregate> createAggregate(clazz: Class<out KClass<TAggregate>>): TAggregate? {
-        return clazz.constructors.find { it.parameters.isEmpty() }?.newInstance() as TAggregate
+    private fun <TAggregate : IAggregate> createAggregate(klass: KClass<TAggregate>): TAggregate {
+        return klass.createInstance()
     }
 
     override suspend fun save(
@@ -42,7 +44,7 @@ class InMemoryEventRepository : IRepository {
         commitID: UUID,
         updateHeaders: Map<String, Objects>
     ) {
-        events.clear();
+        //events.clear();
         events.addAll(uncommittedEvents)
     }
 

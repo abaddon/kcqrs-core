@@ -5,12 +5,18 @@ import io.github.abaddon.kcqrs.core.IRouteEvents
 import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
 
 abstract class AggregateRoot(
-    private val registeredRoutes: IRouteEvents
+    private var registeredRoutes: IRouteEvents
 ) : IAggregate {
     private val uncommittedEvents: MutableCollection<DomainEvent> = ArrayList<DomainEvent>()
 
+    constructor():this(ConventionEventRouter())
+
     init {
         registeredRoutes.register(this)
+    }
+
+    fun register(route : (eventArgs: DomainEvent) -> IAggregate ) {
+        registeredRoutes.register(DomainEvent::class, route);
     }
 
     override fun applyEvent(event: DomainEvent): IAggregate{

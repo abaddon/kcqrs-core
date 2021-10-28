@@ -1,12 +1,12 @@
 package io.github.abaddon.kcqrs.core
 
 import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import kotlin.reflect.KClass
 
 
-typealias Action<DomainEvent> = (eventArgs: DomainEvent) -> IAggregate
 
 interface IRouteEvents{
-    fun register(handler: Action<DomainEvent>)
+    fun register(klass: KClass<*>, handler: (eventArgs: DomainEvent) -> IAggregate)
 
     fun register(aggregate: IAggregate)
 

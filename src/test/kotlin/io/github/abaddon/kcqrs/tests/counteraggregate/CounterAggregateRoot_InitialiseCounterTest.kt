@@ -6,7 +6,7 @@ import io.github.abaddon.kcqrs.tests.counteraggregate.commands.InitialiseCounter
 import io.github.abaddon.kcqrs.tests.counteraggregate.commands.InitialiseCounterCommand
 import io.github.abaddon.kcqrs.tests.counteraggregate.entities.CounterAggregateId
 import io.github.abaddon.kcqrs.tests.counteraggregate.events.CounterInitialisedEvent
-import io.github.abaddon.kcqrs_test.KcqrsTestSpecification
+import io.github.abaddon.kcqrs.tests.helpers.KcqrsTestSpecification
 import java.util.*
 
 class CounterAggregateRoot_InitialiseCounterTest: KcqrsTestSpecification<InitialiseCounterCommand>() {

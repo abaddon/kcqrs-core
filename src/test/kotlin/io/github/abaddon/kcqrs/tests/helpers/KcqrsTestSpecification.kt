@@ -1,10 +1,8 @@
-package io.github.abaddon.kcqrs_test
+package io.github.abaddon.kcqrs.tests.helpers
 
 import io.github.abaddon.kcqrs.core.domain.messages.commands.ICommand
 import io.github.abaddon.kcqrs.core.domain.messages.commands.ICommandHandler
 import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -26,8 +24,9 @@ abstract class KcqrsTestSpecification<CMD : ICommand> {
 
     @Test
     fun checkBehaviour() {
-
+        repository.applyGivenEvents(given())
         var handler = onHandler()
+
         runBlocking {
             handler.handle(`when`())
         }
