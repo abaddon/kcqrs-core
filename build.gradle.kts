@@ -42,14 +42,14 @@ tasks.withType<Test> {
     }
 }
 
-//tasks.jacocoTestReport {
-//    reports {
-//        xml.required.set(true)
-//        csv.required.set(false)
-//        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
-//    }
-//}
-//
+tasks.jacocoTestReport {
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco"))
+    }
+}
+
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
     kotlinOptions.jvmTarget = "11"
