@@ -1,5 +1,4 @@
 .gradle
-/build/
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -11,4 +10,7 @@ gradle-app.setting
 .gradletasknamecache
 
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
-# gradle/wrapper/gradle-wrapper.properties
+gradle-wrapper.properties
+*/build/
+/build/
+/kcqrs-core/gradle/
