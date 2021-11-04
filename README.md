@@ -8,7 +8,7 @@ The porting is still in progress and the library has a lot of main features miss
 
 The scope of this project is to learn more about DDD and CQRS / ES
 
-Any feedback is welcome
+Feedbacks are welcome
 
 
 
