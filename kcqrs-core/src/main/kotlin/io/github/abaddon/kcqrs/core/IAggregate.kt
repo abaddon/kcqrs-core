@@ -8,6 +8,6 @@ interface IAggregate{
     val version: Long
 
     fun applyEvent(event: IEvent): IAggregate
-    fun uncommittedEvents(): List<DomainEvent<*>>
+    fun uncommittedEvents(): List<DomainEvent>
     fun clearUncommittedEvents()
 }

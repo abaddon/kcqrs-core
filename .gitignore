@@ -14,3 +14,4 @@ gradle-wrapper.properties
 */build/
 /build/
 /kcqrs-core/gradle/
+/.idea/

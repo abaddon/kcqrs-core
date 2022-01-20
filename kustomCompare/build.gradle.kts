@@ -9,7 +9,7 @@ version = "0.0.1"
 
 //Versions
 val slf4jVersion = "1.7.25"
-val kotlinVersion = "1.5.31"
+val kotlinVersion = "1.6.0"
 val junitJupiterVersion = "5.7.0"
 
 

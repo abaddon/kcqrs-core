@@ -2,6 +2,7 @@ package io.github.abaddon.kcqrs.test.integration
 
 import io.github.abaddon.kcqrs.core.domain.messages.commands.ICommandHandler
 import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import io.github.abaddon.kcqrs.test.KcqrsTestSpecification
 import io.github.abaddon.kcqrs.test.sample.counter.commands.DecreaseCounterCommand
 import io.github.abaddon.kcqrs.test.sample.counter.commands.DecreaseCounterCommandCommandHandler
 import io.github.abaddon.kcqrs.test.sample.counter.entities.CounterAggregateId
@@ -9,7 +10,6 @@ import io.github.abaddon.kcqrs.test.sample.counter.entities.CounterAggregateRoot
 import io.github.abaddon.kcqrs.test.sample.counter.events.CounterDecreaseEvent
 import io.github.abaddon.kcqrs.test.sample.counter.events.CounterIncreasedEvent
 import io.github.abaddon.kcqrs.test.sample.counter.events.CounterInitialisedEvent
-import io.github.abaddon.kcqrs.test.KcqrsTestSpecification
 import java.util.*
 
 class CounterAggregateRoot_DecreaseCounterTest: KcqrsTestSpecification<DecreaseCounterCommand, CounterAggregateRoot>(
@@ -24,7 +24,7 @@ class CounterAggregateRoot_DecreaseCounterTest: KcqrsTestSpecification<DecreaseC
         return DecreaseCounterCommandCommandHandler(repository)
     }
 
-    override fun given(): List<DomainEvent<*>> {
+    override fun given(): List<DomainEvent> {
         return listOf(
             CounterInitialisedEvent(counterAggregateId,initialValue),
             CounterIncreasedEvent(counterAggregateId,incrementValue)
@@ -35,7 +35,7 @@ class CounterAggregateRoot_DecreaseCounterTest: KcqrsTestSpecification<DecreaseC
         return DecreaseCounterCommand(counterAggregateId,decrementValue)
     }
 
-    override fun expected(): List<DomainEvent<*>> {
+    override fun expected(): List<DomainEvent> {
         return listOf(CounterDecreaseEvent(counterAggregateId,decrementValue))
     }
 

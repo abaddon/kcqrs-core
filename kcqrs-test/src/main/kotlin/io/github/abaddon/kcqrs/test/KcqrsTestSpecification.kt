@@ -18,11 +18,11 @@ abstract class KcqrsTestSpecification<CMD : ICommand, TAggregate:IAggregate>(kCl
 
     abstract fun expectedException(): Exception?
 
-    abstract fun given(): List<DomainEvent<*>>
+    abstract fun given(): List<DomainEvent>
 
     abstract fun `when`(): CMD
 
-    abstract fun expected(): List<DomainEvent<*>>
+    abstract fun expected(): List<DomainEvent>
 
     abstract fun onHandler(): ICommandHandler<CMD>
 
@@ -57,7 +57,7 @@ abstract class KcqrsTestSpecification<CMD : ICommand, TAggregate:IAggregate>(kCl
     }
 
     companion object {
-        fun compareEvents(expected: List<DomainEvent<*>>, published: List<DomainEvent<*>>) {
+        fun compareEvents(expected: List<DomainEvent>, published: List<DomainEvent>) {
             assertEquals(expected.count(), published.count(), "Different number of expected/published events.")
             val compareLogic = CompareLogic(CompareLogicConfig()
                 .addMemberToIgnore("messageId")

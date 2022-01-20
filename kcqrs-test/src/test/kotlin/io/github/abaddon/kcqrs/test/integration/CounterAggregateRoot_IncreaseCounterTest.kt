@@ -2,13 +2,13 @@ package io.github.abaddon.kcqrs.test.integration
 
 import io.github.abaddon.kcqrs.core.domain.messages.commands.ICommandHandler
 import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import io.github.abaddon.kcqrs.test.KcqrsTestSpecification
 import io.github.abaddon.kcqrs.test.sample.counter.commands.IncreaseCounterCommand
 import io.github.abaddon.kcqrs.test.sample.counter.commands.IncreaseCounterCommandCommandHandler
 import io.github.abaddon.kcqrs.test.sample.counter.entities.CounterAggregateId
 import io.github.abaddon.kcqrs.test.sample.counter.entities.CounterAggregateRoot
 import io.github.abaddon.kcqrs.test.sample.counter.events.CounterIncreasedEvent
 import io.github.abaddon.kcqrs.test.sample.counter.events.CounterInitialisedEvent
-import io.github.abaddon.kcqrs.test.KcqrsTestSpecification
 import java.util.*
 
 class CounterAggregateRoot_IncreaseCounterTest: KcqrsTestSpecification<IncreaseCounterCommand, CounterAggregateRoot>(
@@ -23,7 +23,7 @@ class CounterAggregateRoot_IncreaseCounterTest: KcqrsTestSpecification<IncreaseC
     }
 
 
-    override fun given(): List<DomainEvent<*>> {
+    override fun given(): List<DomainEvent> {
         return listOf(
             CounterInitialisedEvent(counterAggregateId,initialValue),
         )
@@ -33,7 +33,7 @@ class CounterAggregateRoot_IncreaseCounterTest: KcqrsTestSpecification<IncreaseC
         return IncreaseCounterCommand(counterAggregateId,incrementValue)
     }
 
-    override fun expected(): List<DomainEvent<*>> {
+    override fun expected(): List<DomainEvent> {
         return listOf(CounterIncreasedEvent(counterAggregateId,incrementValue))
     }
 

@@ -11,10 +11,10 @@ data class CounterAggregateRoot private constructor(
     override val id: CounterAggregateId,
     override val version: Long,
     val counter: Int,
-    override val uncommittedEvents: MutableCollection<DomainEvent<*>>
+    override val uncommittedEvents: MutableCollection<DomainEvent>
 ) : AggregateRoot() {
 
-    constructor() : this(CounterAggregateId(), 0L, 0, ArrayList<DomainEvent<*>>())
+    constructor() : this(CounterAggregateId(), 0L, 0, ArrayList<DomainEvent>())
     //constructor(id: CounterAggregateId) : this(CounterAggregateId(), 0L, 0)
 
     companion object {
@@ -23,9 +23,9 @@ data class CounterAggregateRoot private constructor(
             val emptyAggregate = CounterAggregateRoot()
             return try {
                 check(initialValue >= 0 && initialValue < Int.MAX_VALUE) { "Value $initialValue not valid, it has to be >= 0 and < ${Int.MAX_VALUE}" }
-                emptyAggregate.raiseEvent(CounterInitialisedEvent(id, initialValue)) as CounterAggregateRoot
+                emptyAggregate.raiseEvent(CounterInitialisedEvent.create(id, initialValue)) as CounterAggregateRoot
             } catch (e: Exception) {
-                emptyAggregate.raiseEvent(DomainErrorEvent(id, e)) as CounterAggregateRoot
+                emptyAggregate.raiseEvent(DomainErrorEvent.create(id, e)) as CounterAggregateRoot
             }
         }
     }
@@ -35,9 +35,9 @@ data class CounterAggregateRoot private constructor(
             check(incrementValue >= 0 && incrementValue < Int.MAX_VALUE) { "Value $incrementValue not valid, it has to be >= 0 and < ${Int.MAX_VALUE}" }
             val updatedCounter = counter + incrementValue
             check(updatedCounter < Int.MAX_VALUE) { "Aggregate value $updatedCounter is not valid, it has to be < ${Int.MAX_VALUE}" }
-            raiseEvent(CounterIncreasedEvent(id, incrementValue)) as CounterAggregateRoot
+            raiseEvent(CounterIncreasedEvent.create(id, incrementValue)) as CounterAggregateRoot
         } catch (e: Exception) {
-            raiseEvent(DomainErrorEvent(id, e)) as CounterAggregateRoot
+            raiseEvent(DomainErrorEvent.create(id, e)) as CounterAggregateRoot
         }
     }
 
@@ -47,9 +47,9 @@ data class CounterAggregateRoot private constructor(
             val updatedCounter = counter - decrementValue
             check(updatedCounter >= 0) { "Aggregate value $updatedCounter is not valid, it has to be >= 0" }
 
-            raiseEvent(CounterDecreaseEvent(id, decrementValue)) as CounterAggregateRoot
+            raiseEvent(CounterDecreaseEvent.create(id, decrementValue)) as CounterAggregateRoot
         } catch (e: Exception) {
-            raiseEvent(DomainErrorEvent(id, e)) as CounterAggregateRoot
+            raiseEvent(DomainErrorEvent.create(id, e)) as CounterAggregateRoot
         }
     }
 

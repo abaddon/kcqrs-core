@@ -11,10 +11,10 @@ import kotlin.reflect.full.createInstance
 
 class InMemoryEventRepository<TAggregate:IAggregate>(private val klass: KClass<TAggregate>) : IRepository<TAggregate> {
 
-    val givenEvents: MutableList<DomainEvent<*>> = mutableListOf()
-    val events: MutableList<DomainEvent<*>> = mutableListOf()
+    val givenEvents: MutableList<DomainEvent> = mutableListOf()
+    val events: MutableList<DomainEvent> = mutableListOf()
 
-    fun applyGivenEvents(events: List<DomainEvent<*>>) {
+    fun applyGivenEvents(events: List<DomainEvent>) {
         givenEvents.clear()
         givenEvents.addAll(events)
     }

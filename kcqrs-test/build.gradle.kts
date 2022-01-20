@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "1.5.31"
-    kotlin("plugin.serialization") version "1.5.31" apply true
+    kotlin("jvm") version "1.6.0"
+//    kotlin("plugin.serialization") version "1.6.0" apply true
     jacoco
     `maven-publish`
 }
@@ -12,9 +12,9 @@ version = "0.0.1-SNAPSHOT"
 val kcqrsCoreVersion = "0.0.1-SNAPSHOT"
 val kustomCompareVersion = "0.0.1"
 val slf4jVersion = "1.7.25"
-val kotlinVersion = "1.5.31"
-val kotlinCoroutineVersion = "1.5.1"
-val kotlinxSerializationVersion = "1.3.0"
+val kotlinVersion = "1.6.0"
+val kotlinCoroutineVersion = "1.6.0"
+//val kotlinxSerializationVersion = "1.3.0"
 val jacksonModuleKotlinVersion = "2.13.0"
 val junitJupiterVersion = "5.7.0"
 

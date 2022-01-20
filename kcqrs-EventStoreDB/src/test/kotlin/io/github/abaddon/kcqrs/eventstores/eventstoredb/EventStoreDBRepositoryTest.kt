@@ -1,6 +1,7 @@
 package io.github.abaddon.kcqrs.eventstores.eventstoredb
 
-import com.eventstore.dbclient.*
+import com.eventstore.dbclient.EventStoreDBClient
+import com.eventstore.dbclient.EventStoreDBConnectionString
 import io.github.abaddon.kcqrs.eventstores.eventstoredb.sample.counter.entities.CounterAggregateId
 import io.github.abaddon.kcqrs.eventstores.eventstoredb.sample.counter.entities.CounterAggregateRoot
 import kotlinx.coroutines.delay

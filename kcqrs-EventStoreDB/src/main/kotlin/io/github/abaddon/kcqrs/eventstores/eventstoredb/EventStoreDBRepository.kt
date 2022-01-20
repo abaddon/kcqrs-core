@@ -79,7 +79,7 @@ class EventStoreDBRepository<TAggregate: IAggregate>(private val client: EventSt
             Pair(AGGREGATE_TYPE_HEADER, aggregate::class.simpleName.orEmpty()),
         )
         val streamName: String = aggregateIdStreamName(aggregate.id)
-        val uncommittedEvents: List<DomainEvent<*>> = aggregate.uncommittedEvents();
+        val uncommittedEvents: List<DomainEvent> = aggregate.uncommittedEvents();
 
         val originalVersion = aggregate.version - uncommittedEvents.size
         val expectedRevision: ExpectedRevision =

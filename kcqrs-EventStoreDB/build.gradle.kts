@@ -1,6 +1,5 @@
 plugins {
     kotlin("jvm") version "1.6.0"
-    kotlin("plugin.serialization") version "1.5.31" apply true
     jacoco
     `maven-publish`
 }
@@ -11,9 +10,8 @@ version = "0.0.1-SNAPSHOT"
 //Versions
 val kcqrsCoreVersion = "0.0.1-SNAPSHOT"
 val slf4jVersion = "1.7.25"
-val kotlinVersion = "1.5.31"
+val kotlinVersion = "1.6.0"
 val kotlinCoroutineVersion = "1.5.1"
-val kotlinxSerializationVersion = "1.3.0"
 val jacksonModuleKotlinVersion = "2.13.0"
 val junitJupiterVersion = "5.7.0"
 
@@ -40,6 +38,7 @@ dependencies {
     implementation("org.slf4j:slf4j-log4j12:$slf4jVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutineVersion")
+
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
 
     //EventStoreDB

@@ -5,15 +5,18 @@ import io.github.abaddon.kcqrs.core.domain.messages.events.EventHeader
 import io.github.abaddon.kcqrs.core.sample.counter.entities.CounterAggregateId
 import io.github.abaddon.kcqrs.core.sample.counter.entities.CounterAggregateRoot
 import java.util.*
-import kotlin.reflect.typeOf
 
 data class CounterInitialisedEvent private constructor(
     override val messageId: UUID,
     override val aggregateId: CounterAggregateId,
-    override val version: Int = 1,
     val value: Int
-) : DomainEvent<CounterAggregateRoot>(){
+) : DomainEvent {
+    override val aggregateType: String = CounterAggregateRoot.javaClass.simpleName
+    override val version: Int = 1
+    override val header: EventHeader = EventHeader.create("CounterAggregateRoot")
 
-    @OptIn(ExperimentalStdlibApi::class)
-    constructor(aggregateId: CounterAggregateId, value: Int):this(UUID.randomUUID(),aggregateId,1,value)
+    companion object {
+        fun create(aggregateId: CounterAggregateId, value: Int): CounterInitialisedEvent =
+            CounterInitialisedEvent(UUID.randomUUID(), aggregateId, value)
+    }
 }

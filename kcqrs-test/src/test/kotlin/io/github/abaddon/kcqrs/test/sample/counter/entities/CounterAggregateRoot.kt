@@ -11,10 +11,10 @@ data class CounterAggregateRoot private constructor(
     override val id: CounterAggregateId,
     override val version: Long,
     val counter: Int,
-    override val uncommittedEvents: MutableCollection<DomainEvent<*>>
+    override val uncommittedEvents: MutableCollection<DomainEvent>
 ) : AggregateRoot() {
 
-    constructor() : this(CounterAggregateId(), 0L, 0, ArrayList<DomainEvent<*>>())
+    constructor() : this(CounterAggregateId(), 0L, 0, ArrayList<DomainEvent>())
     //constructor(id: CounterAggregateId) : this(CounterAggregateId(), 0L, 0)
 
     companion object {
