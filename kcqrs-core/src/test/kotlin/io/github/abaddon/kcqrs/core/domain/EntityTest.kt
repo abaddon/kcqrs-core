@@ -1,7 +1,7 @@
 package io.github.abaddon.kcqrs.core.domain
 
 import io.github.abaddon.kcqrs.core.IIdentity
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class EntityTest{

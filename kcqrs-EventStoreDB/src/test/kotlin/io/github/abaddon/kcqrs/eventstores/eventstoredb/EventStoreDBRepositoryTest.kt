@@ -2,8 +2,8 @@ package io.github.abaddon.kcqrs.eventstores.eventstoredb
 
 import com.eventstore.dbclient.EventStoreDBClient
 import com.eventstore.dbclient.EventStoreDBConnectionString
-import io.github.abaddon.kcqrs.eventstores.eventstoredb.sample.counter.entities.CounterAggregateId
-import io.github.abaddon.kcqrs.eventstores.eventstoredb.sample.counter.entities.CounterAggregateRoot
+import io.github.abaddon.kcqrs.eventstores.eventstoredb.helpers.entities.CounterAggregateId
+import io.github.abaddon.kcqrs.eventstores.eventstoredb.helpers.entities.CounterAggregateRoot
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll

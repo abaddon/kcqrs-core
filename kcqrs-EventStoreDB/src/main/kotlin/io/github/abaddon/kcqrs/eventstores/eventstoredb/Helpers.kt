@@ -1,8 +1,5 @@
 package io.github.abaddon.kcqrs.eventstores.eventstoredb
 
-//import com.fasterxml.jackson.databind.ObjectMapper
-//import com.fasterxml.jackson.module.kotlin.KotlinFeature
-//import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.eventstore.dbclient.EventData
 import com.eventstore.dbclient.ResolvedEvent
 import com.fasterxml.jackson.databind.ObjectMapper

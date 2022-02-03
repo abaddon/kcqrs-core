@@ -1,8 +1,8 @@
 package io.github.abaddon.kcqrs.test
 
 import io.github.abaddon.kcqrs.core.IAggregate
+import io.github.abaddon.kcqrs.core.domain.IAggregateHandler
 import io.github.abaddon.kcqrs.core.domain.messages.commands.ICommand
-import io.github.abaddon.kcqrs.core.domain.messages.commands.ICommandHandler
 import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
 import io.github.abaddon.kustomCompare.CompareLogic
 import io.github.abaddon.kustomCompare.config.CompareLogicConfig
@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-abstract class KcqrsTestSpecification<CMD : ICommand, TAggregate:IAggregate>(kClass: KClass<TAggregate>) {
+abstract class KcqrsTestSpecification<TAggregate:IAggregate>(kClass: KClass<TAggregate>) {
     val repository: InMemoryEventRepository<TAggregate> = InMemoryEventRepository<TAggregate>(kClass)
     private val expectedException: Exception? = expectedException();
 
@@ -20,11 +20,11 @@ abstract class KcqrsTestSpecification<CMD : ICommand, TAggregate:IAggregate>(kCl
 
     abstract fun given(): List<DomainEvent>
 
-    abstract fun `when`(): CMD
+    abstract fun `when`(): ICommand<TAggregate>
 
     abstract fun expected(): List<DomainEvent>
 
-    abstract fun onHandler(): ICommandHandler<CMD>
+    abstract fun onHandler(): IAggregateHandler<TAggregate>
 
     @Test
     fun checkBehaviour() {

@@ -7,7 +7,6 @@ import io.github.abaddon.kcqrs.core.domain.messages.events.IEvent
 import io.github.abaddon.kcqrs.core.helpers.throwHandlerNotFound
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
-import kotlin.reflect.full.defaultType
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.typeOf
 

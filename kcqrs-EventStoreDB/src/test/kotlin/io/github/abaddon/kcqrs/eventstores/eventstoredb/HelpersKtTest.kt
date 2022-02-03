@@ -1,7 +1,5 @@
 package io.github.abaddon.kcqrs.eventstores.eventstoredb
 
-//import io.github.abaddon.kcqrs.eventstores.eventstoredb.serializations.UUIDSerializer
-//import kotlinx.serialization.Serializable
 import com.eventstore.dbclient.Position
 import com.eventstore.dbclient.RecordedEvent
 import com.eventstore.dbclient.StreamRevision
@@ -26,24 +24,9 @@ internal class HelpersKtTest {
         val headers = mapOf<String, String>(
             Pair("header1", "value1")
         )
-        //
-//        val eventId = expectedDummyDomainEvent.messageId;
-//        val eventType = expectedDummyDomainEvent::class.qualifiedName!!
-//        //val
-//        val eventJson = mapper.writeValueAsString(expectedDummyDomainEvent)//Json.encodeToString<T>(this) //
-//
-//        val headerJson = mapper.writeValueAsString(headers)//Json.encodeToString(header) //
-//        val dummyEventDate = EventData(
-//            eventId,
-//            eventType,
-//            "application/json",
-//            eventJson.encodeToByteArray(),
-//            headerJson.encodeToByteArray()
-//        )
-        //
+
         val dummyEventDate = expectedDummyDomainEvent.toEventData(headers)
 
-        //build RecordedEvent from simpleEventDate
         val systemMap = mapOf<String, String>(
             Pair("type", DummyDomainEvent::class.qualifiedName!!),
             Pair("content-type", "json"),
@@ -61,25 +44,11 @@ internal class HelpersKtTest {
 
         //deserialize
         val actualDummyDomainEvent = eventStoreRecordedEvent.toDomainEvent()
-        //
-//        val eventTypeName = eventStoreRecordedEvent.eventType
-//
-//        val eventClass = Class.forName(eventTypeName)
-//
-//
-//        val eventDataJson: String = eventStoreRecordedEvent.eventData.decodeToString()
-//        val eventMetaJson: String = eventStoreRecordedEvent.userMetadata.decodeToString() //TODO headers not managed
-//
-//        val actualDummyDomainEvent = mapper.readValue(eventDataJson, eventClass)
-        //
-
-        //assertEquals(expectedDummyDomainEvent.aggregateId, actualDummyDomainEvent.aggregateId)
         assertEquals(expectedDummyDomainEvent.name, (actualDummyDomainEvent as DummyDomainEvent).name)
 
     }
 
 }
-
 
 class DummyAggregateId constructor(
     val value: UUID
@@ -105,13 +74,13 @@ data class DummyDomainEvent private constructor(
     override val version: Int = 1,
     override val header: EventHeader,
     val name: String,
-): DomainEvent {
+) : DomainEvent {
 
     companion object {
         fun create(aggregateId: DummyAggregateId, name: String): DummyDomainEvent {
             val aggregateType = "DummyAggregate"
             val header = EventHeader.create(aggregateType)
-            return DummyDomainEvent(UUID.randomUUID(), aggregateId, aggregateType, 1,header, name)
+            return DummyDomainEvent(UUID.randomUUID(), aggregateId, aggregateType, 1, header, name)
         }
     }
 }

@@ -40,7 +40,7 @@ class InMemoryEventRepository<TAggregate:IAggregate>(private val klass: KClass<T
     }
 
     override suspend fun save(
-        aggregate: IAggregate,
+        aggregate: TAggregate,
         commitID: UUID,
         updateHeaders: Map<String, String>
     ) {

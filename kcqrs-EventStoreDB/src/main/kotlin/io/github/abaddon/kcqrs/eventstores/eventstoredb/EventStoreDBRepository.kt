@@ -68,11 +68,7 @@ class EventStoreDBRepository<TAggregate: IAggregate>(private val client: EventSt
         return hydratedAggregate;
     }
 
-    override suspend fun save(
-        aggregate: IAggregate,
-        commitID: UUID,
-        updateHeaders: Map<String, String>
-    ) {
+    override suspend fun save(aggregate: TAggregate, commitID: UUID, updateHeaders: Map<String, String>) {
         val header = updateHeaders + mapOf(
             Pair(COMMIT_ID_HEADER, commitID.toString()),
             Pair(COMMIT_DATE_HEADER, Instant.now().toString()),
@@ -98,4 +94,5 @@ class EventStoreDBRepository<TAggregate: IAggregate>(private val client: EventSt
             }
         }
     }
+
 }
