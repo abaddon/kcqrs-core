@@ -33,10 +33,9 @@ jobs:
         run: ./gradlew build jacocoTestReport
 
       - name: Publish to Maven Central
-          if: success()
-          run: ./gradlew publish closeAndReleaseStagingRepository
-          env:
-            GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
-            GPG_SIGNING_PASSPHRASE: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
-            OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-            OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        run: ./gradlew publish closeAndReleaseStagingRepository
+        env:
+          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+          GPG_SIGNING_PASSPHRASE: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
