@@ -27,7 +27,6 @@ repositories {
 
 dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
-    implementation("org.slf4j:slf4j-log4j12:$slf4jVersion")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
     testImplementation(kotlin("test"))

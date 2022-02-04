@@ -2,6 +2,7 @@ package io.github.abaddon.kcqrs.examples.counterInMemory.entities
 
 import io.github.abaddon.kcqrs.core.domain.AggregateRoot
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
+import io.github.abaddon.kcqrs.core.exceptions.HandlerForDomainEventNotFoundException
 import io.github.abaddon.kcqrs.examples.counterInMemory.events.CounterDecreaseEvent
 import io.github.abaddon.kcqrs.examples.counterInMemory.events.CounterIncreasedEvent
 import io.github.abaddon.kcqrs.examples.counterInMemory.events.CounterInitialisedEvent
@@ -48,7 +49,7 @@ data class CounterAggregateRoot private constructor(
             check(updatedCounter >= 0) { "Aggregate value $updatedCounter is not valid, it has to be >= 0" }
 
             raiseEvent(CounterDecreaseEvent(id, decrementValue)) as CounterAggregateRoot
-        } catch (e: Exception) {
+        } catch (e: HandlerForDomainEventNotFoundException) {
             raiseEvent(DomainErrorEvent(id, e)) as CounterAggregateRoot
         }
     }
