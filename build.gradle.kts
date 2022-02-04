@@ -3,7 +3,7 @@ group = "io.github.abaddon.kcqrs"
 version = "0.0.1-SNAPSHOT"
 
 object Meta {
-    const val desc = "Kotlin CQRS Core library"
+    const val desc = "KCQRS Core library"
     const val license = "Apache-2.0"
     const val githubRepo = "abaddon/kcqrs-core"
     const val release = "https://s01.oss.sonatype.org/service/local/"
@@ -27,9 +27,6 @@ plugins {
     `maven-publish`
     signing
 }
-
-//Versions
-
 
 publishing {
     publications {
@@ -57,7 +54,6 @@ dependencies {
 
 jacoco {
     toolVersion = Versions.jacocoToolVersion
-    //reportsDirectory.set(layout.buildDirectory.dir("customJacocoReportDir"))
 }
 
 tasks.withType<Test> {
