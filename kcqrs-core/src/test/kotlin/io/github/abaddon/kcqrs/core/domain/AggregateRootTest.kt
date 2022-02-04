@@ -2,8 +2,8 @@ package io.github.abaddon.kcqrs.core.domain
 
 import io.github.abaddon.kcqrs.core.IAggregate
 import io.github.abaddon.kcqrs.core.IIdentity
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
 import io.github.abaddon.kcqrs.core.domain.messages.events.EventHeader
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.domain.messages.events.IEvent
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -114,7 +114,7 @@ data class FakeIdentity(val value: Int) : IIdentity {
 data class DummyAggregate private constructor(
     override val id: IIdentity,
     override val version: Long,
-    override val uncommittedEvents: MutableCollection<DomainEvent>
+    override val uncommittedEvents: MutableCollection<IDomainEvent>
 ) : AggregateRoot() {
 
     fun generateFakeEvent1(): DummyAggregate {
@@ -142,13 +142,13 @@ data class DummyAggregate private constructor(
     }
 
     companion object {
-        fun create(id: IIdentity, version: Long): DummyAggregate = DummyAggregate(id, version, ArrayList<DomainEvent>())
+        fun create(id: IIdentity, version: Long): DummyAggregate = DummyAggregate(id, version, ArrayList<IDomainEvent>())
     }
 }
 
 data class DummyEvent(
     override val aggregateId: IIdentity
-) : DomainEvent {
+) : IDomainEvent {
     override val aggregateType: String = DummyAggregate.javaClass.simpleName
     override val version: Int = 1
     override val header: EventHeader = EventHeader.create("DummyAggregate")
@@ -157,7 +157,7 @@ data class DummyEvent(
 
 data class DummyEvent2(
     override val aggregateId: IIdentity
-) : DomainEvent {
+) : IDomainEvent {
     override val aggregateType: String = DummyAggregate.javaClass.simpleName
     override val version: Int = 1
     override val header: EventHeader = EventHeader.create("DummyAggregate")

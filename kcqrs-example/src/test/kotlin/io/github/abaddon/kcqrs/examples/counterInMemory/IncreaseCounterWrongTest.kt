@@ -1,7 +1,7 @@
 package io.github.abaddon.kcqrs.examples.counterInMemory
 
 import io.github.abaddon.kcqrs.core.domain.IAggregateHandler
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.examples.counterInMemory.commands.IncreaseCounterCommand
 import io.github.abaddon.kcqrs.examples.counterInMemory.entities.CounterAggregateId
 import io.github.abaddon.kcqrs.examples.counterInMemory.entities.CounterAggregateRoot
@@ -23,7 +23,7 @@ class IncreaseCounterWrongTest : KcqrsTestSpecification<CounterAggregateRoot>(
     }
 
 
-    override fun given(): List<DomainEvent> {
+    override fun given(): List<IDomainEvent> {
         return listOf(
             CounterInitialisedEvent(counterAggregateId, initialValue),
         )
@@ -33,7 +33,7 @@ class IncreaseCounterWrongTest : KcqrsTestSpecification<CounterAggregateRoot>(
         return IncreaseCounterCommand(counterAggregateId, incrementValue)
     }
 
-    override fun expected(): List<DomainEvent> {
+    override fun expected(): List<IDomainEvent> {
         val exception = IllegalStateException("Value 2147483647 not valid, it has to be >= 0 and < 2147483647")
         return listOf(
             DomainErrorEvent(

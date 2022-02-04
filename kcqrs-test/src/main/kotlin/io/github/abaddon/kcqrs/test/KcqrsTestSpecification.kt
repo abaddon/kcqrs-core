@@ -3,7 +3,7 @@ package io.github.abaddon.kcqrs.test
 import io.github.abaddon.kcqrs.core.IAggregate
 import io.github.abaddon.kcqrs.core.domain.IAggregateHandler
 import io.github.abaddon.kcqrs.core.domain.messages.commands.ICommand
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kustomCompare.CompareLogic
 import io.github.abaddon.kustomCompare.config.CompareLogicConfig
 import kotlinx.coroutines.runBlocking
@@ -18,11 +18,11 @@ abstract class KcqrsTestSpecification<TAggregate:IAggregate>(kClass: KClass<TAgg
 
     abstract fun expectedException(): Exception?
 
-    abstract fun given(): List<DomainEvent>
+    abstract fun given(): List<IDomainEvent>
 
     abstract fun `when`(): ICommand<TAggregate>
 
-    abstract fun expected(): List<DomainEvent>
+    abstract fun expected(): List<IDomainEvent>
 
     abstract fun onHandler(): IAggregateHandler<TAggregate>
 
@@ -57,7 +57,7 @@ abstract class KcqrsTestSpecification<TAggregate:IAggregate>(kClass: KClass<TAgg
     }
 
     companion object {
-        fun compareEvents(expected: List<DomainEvent>, published: List<DomainEvent>) {
+        fun compareEvents(expected: List<IDomainEvent>, published: List<IDomainEvent>) {
             assertEquals(expected.count(), published.count(), "Different number of expected/published events.")
             val compareLogic = CompareLogic(CompareLogicConfig()
                 .addMemberToIgnore("messageId")

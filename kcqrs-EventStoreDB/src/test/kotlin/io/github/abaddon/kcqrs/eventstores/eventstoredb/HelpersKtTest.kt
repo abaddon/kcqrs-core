@@ -5,8 +5,8 @@ import com.eventstore.dbclient.RecordedEvent
 import com.eventstore.dbclient.StreamRevision
 import io.github.abaddon.kcqrs.core.IIdentity
 import io.github.abaddon.kcqrs.core.domain.AggregateRoot
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
 import io.github.abaddon.kcqrs.core.domain.messages.events.EventHeader
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -62,7 +62,7 @@ class DummyAggregateId constructor(
 data class DummyAggregate(
     override val id: IIdentity,
     override val version: Long,
-    override val uncommittedEvents: MutableCollection<DomainEvent>
+    override val uncommittedEvents: MutableCollection<IDomainEvent>
 ) : AggregateRoot() {
     companion object
 }
@@ -74,7 +74,7 @@ data class DummyDomainEvent private constructor(
     override val version: Int = 1,
     override val header: EventHeader,
     val name: String,
-) : DomainEvent {
+) : IDomainEvent {
 
     companion object {
         fun create(aggregateId: DummyAggregateId, name: String): DummyDomainEvent {

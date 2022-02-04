@@ -2,7 +2,7 @@ package io.github.abaddon.kcqrs.core.domain
 
 import io.github.abaddon.kcqrs.core.IAggregate
 import io.github.abaddon.kcqrs.core.IRouteEvents
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.domain.messages.events.IEvent
 import io.github.abaddon.kcqrs.core.helpers.throwHandlerNotFound
 import kotlin.reflect.KClass
@@ -19,7 +19,7 @@ class RegistrationEventRouter: IRouteEvents {
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun register(klass: KClass<*>, handler: (eventArgs: IEvent) -> IAggregate) {
-        handlers[typeOf<DomainEvent>()] = handler
+        handlers[typeOf<IDomainEvent>()] = handler
     }
 
     override fun register(aggregate: IAggregate) {

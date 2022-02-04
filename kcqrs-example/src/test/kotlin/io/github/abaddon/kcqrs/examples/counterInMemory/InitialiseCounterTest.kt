@@ -1,7 +1,7 @@
 package io.github.abaddon.kcqrs.examples.counterInMemory
 
 import io.github.abaddon.kcqrs.core.domain.IAggregateHandler
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.examples.counterInMemory.commands.InitialiseCounterCommand
 import io.github.abaddon.kcqrs.examples.counterInMemory.entities.CounterAggregateId
 import io.github.abaddon.kcqrs.examples.counterInMemory.entities.CounterAggregateRoot
@@ -21,7 +21,7 @@ class InitialiseCounterTest: KcqrsTestSpecification<CounterAggregateRoot>(
     }
 
 
-    override fun given(): List<DomainEvent> {
+    override fun given(): List<IDomainEvent> {
         return listOf()
     }
 
@@ -29,7 +29,7 @@ class InitialiseCounterTest: KcqrsTestSpecification<CounterAggregateRoot>(
         return InitialiseCounterCommand(counterAggregateId,initialValue)
     }
 
-    override fun expected(): List<DomainEvent> {
+    override fun expected(): List<IDomainEvent> {
         return listOf(CounterInitialisedEvent(counterAggregateId,initialValue))
     }
 

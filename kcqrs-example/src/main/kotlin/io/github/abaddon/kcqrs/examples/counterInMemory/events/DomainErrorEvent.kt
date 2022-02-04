@@ -1,7 +1,7 @@
 package io.github.abaddon.kcqrs.examples.counterInMemory.events
 
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
 import io.github.abaddon.kcqrs.core.domain.messages.events.EventHeader
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.examples.counterInMemory.entities.CounterAggregateId
 import java.util.*
 
@@ -13,7 +13,7 @@ data class DomainErrorEvent private constructor(
     override val header: EventHeader,
     val errorType: String,
     val errorMsg: String
-) : DomainEvent {
+) : IDomainEvent {
 
     constructor(aggregateId: CounterAggregateId, error: Exception) : this(
         UUID.randomUUID(),

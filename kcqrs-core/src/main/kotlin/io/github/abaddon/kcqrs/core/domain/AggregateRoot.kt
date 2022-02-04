@@ -2,14 +2,14 @@ package io.github.abaddon.kcqrs.core.domain
 
 import io.github.abaddon.kcqrs.core.IAggregate
 import io.github.abaddon.kcqrs.core.IRouteEvents
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.domain.messages.events.IEvent
 import kotlin.reflect.KClass
 
 abstract class AggregateRoot(
     private var registeredRoutes: IRouteEvents
 ) : IAggregate {
-    abstract val uncommittedEvents: MutableCollection<DomainEvent>
+    abstract val uncommittedEvents: MutableCollection<IDomainEvent>
 
     constructor():this(ConventionEventRouter())
 
@@ -25,7 +25,7 @@ abstract class AggregateRoot(
         return registeredRoutes.dispatch(event);
     }
 
-    override fun uncommittedEvents(): List<DomainEvent> {
+    override fun uncommittedEvents(): List<IDomainEvent> {
         return uncommittedEvents.toList()
     }
 
@@ -33,7 +33,7 @@ abstract class AggregateRoot(
         uncommittedEvents.clear()
     }
 
-    protected fun raiseEvent(event: DomainEvent): AggregateRoot {
+    protected fun raiseEvent(event: IDomainEvent): AggregateRoot {
         val updatedAggregate: AggregateRoot = applyEvent(event) as AggregateRoot
         updatedAggregate.uncommittedEvents.add(event)
         return updatedAggregate;

@@ -1,7 +1,7 @@
 package io.github.abaddon.kcqrs.test.integration
 
 import io.github.abaddon.kcqrs.core.domain.IAggregateHandler
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.test.KcqrsTestSpecification
 import io.github.abaddon.kcqrs.test.integration.counter.CounterAggregateHandler
 import io.github.abaddon.kcqrs.test.integration.counter.commands.IncreaseCounterCommand
@@ -23,7 +23,7 @@ class IncreaseCounterTest: KcqrsTestSpecification<CounterAggregateRoot>(
     }
 
 
-    override fun given(): List<DomainEvent> {
+    override fun given(): List<IDomainEvent> {
         return listOf(
             CounterInitialisedEvent(counterAggregateId,initialValue),
         )
@@ -33,7 +33,7 @@ class IncreaseCounterTest: KcqrsTestSpecification<CounterAggregateRoot>(
         return IncreaseCounterCommand(counterAggregateId,incrementValue)
     }
 
-    override fun expected(): List<DomainEvent> {
+    override fun expected(): List<IDomainEvent> {
         return listOf(CounterIncreasedEvent(counterAggregateId,incrementValue))
     }
 

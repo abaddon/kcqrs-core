@@ -2,7 +2,7 @@ package io.github.abaddon.kcqrs.test
 
 import io.github.abaddon.kcqrs.core.IAggregate
 import io.github.abaddon.kcqrs.core.IIdentity
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.helpers.foldEvents
 import io.github.abaddon.kcqrs.core.persistence.IRepository
 import java.util.*
@@ -11,10 +11,10 @@ import kotlin.reflect.full.createInstance
 
 class InMemoryEventRepository<TAggregate:IAggregate>(private val klass: KClass<TAggregate>) : IRepository<TAggregate> {
 
-    val givenEvents: MutableList<DomainEvent> = mutableListOf()
-    val events: MutableList<DomainEvent> = mutableListOf()
+    val givenEvents: MutableList<IDomainEvent> = mutableListOf()
+    val events: MutableList<IDomainEvent> = mutableListOf()
 
-    fun applyGivenEvents(events: List<DomainEvent>) {
+    fun applyGivenEvents(events: List<IDomainEvent>) {
         givenEvents.clear()
         givenEvents.addAll(events)
     }

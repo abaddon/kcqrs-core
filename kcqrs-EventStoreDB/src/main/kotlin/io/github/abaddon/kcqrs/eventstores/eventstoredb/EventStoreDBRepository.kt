@@ -3,7 +3,7 @@ package io.github.abaddon.kcqrs.eventstores.eventstoredb
 import com.eventstore.dbclient.*
 import io.github.abaddon.kcqrs.core.IAggregate
 import io.github.abaddon.kcqrs.core.IIdentity
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.exceptions.AggregateVersionException
 import io.github.abaddon.kcqrs.core.helpers.foldEvents
 import io.github.abaddon.kcqrs.core.persistence.IRepository
@@ -75,12 +75,12 @@ class EventStoreDBRepository<TAggregate: IAggregate>(private val client: EventSt
             Pair(AGGREGATE_TYPE_HEADER, aggregate::class.simpleName.orEmpty()),
         )
         val streamName: String = aggregateIdStreamName(aggregate.id)
-        val uncommittedEvents: List<DomainEvent> = aggregate.uncommittedEvents();
+        val uncommittedEvents: List<IDomainEvent> = aggregate.uncommittedEvents();
 
         val originalVersion = aggregate.version - uncommittedEvents.size
         val expectedRevision: ExpectedRevision =
             if (originalVersion <= 0L) ExpectedRevision.NO_STREAM else ExpectedRevision.expectedRevision(originalVersion - 1L)
-        log.info("aggregate.version: ${aggregate.version}, uncommittedEvents.size: ${uncommittedEvents.size}, originalVersion: $originalVersion, expectedRevision: ${expectedRevision.toString()}")
+        log.info("aggregate.version: ${aggregate.version}, uncommittedEvents.size: ${uncommittedEvents.size}, originalVersion: $originalVersion, expectedRevision: ${expectedRevision}")
         val eventsToSave = uncommittedEvents.map { domainEvent -> domainEvent.toEventData(header) }
 
         val options = AppendToStreamOptions.get()

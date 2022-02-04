@@ -1,6 +1,6 @@
 package io.github.abaddon.kcqrs.core
 
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.domain.messages.events.IEvent
 
 interface IAggregate{
@@ -8,6 +8,6 @@ interface IAggregate{
     val version: Long
 
     fun applyEvent(event: IEvent): IAggregate
-    fun uncommittedEvents(): List<DomainEvent>
+    fun uncommittedEvents(): List<IDomainEvent>
     fun clearUncommittedEvents()
 }

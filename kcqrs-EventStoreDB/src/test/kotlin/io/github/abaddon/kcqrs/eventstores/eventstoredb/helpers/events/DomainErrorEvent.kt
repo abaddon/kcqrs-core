@@ -1,7 +1,7 @@
 package io.github.abaddon.kcqrs.eventstores.eventstoredb.helpers.events
 
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
 import io.github.abaddon.kcqrs.core.domain.messages.events.EventHeader
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.eventstores.eventstoredb.helpers.entities.CounterAggregateId
 import io.github.abaddon.kcqrs.eventstores.eventstoredb.helpers.entities.CounterAggregateRoot
 import java.util.*
@@ -11,7 +11,7 @@ data class DomainErrorEvent(
     override val aggregateId: CounterAggregateId,
     val errorType: String,
     val errorMsg: String
-) : DomainEvent{
+) : IDomainEvent{
     override val aggregateType: String = CounterAggregateRoot.javaClass.simpleName
     override val version: Int = 1
     override val header: EventHeader = EventHeader.create(aggregateType)

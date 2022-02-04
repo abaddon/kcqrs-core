@@ -5,7 +5,7 @@ import com.eventstore.dbclient.ResolvedEvent
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 
 val mapper = ObjectMapper().registerModule(
     KotlinModule.Builder()
@@ -18,11 +18,11 @@ val mapper = ObjectMapper().registerModule(
         .build()
 )
 
-fun Iterable<ResolvedEvent>.toDomainEvents(): Iterable<DomainEvent> {
+fun Iterable<ResolvedEvent>.toDomainEvents(): Iterable<IDomainEvent> {
     return this.map {  resolvedEvent -> resolvedEvent.originalEvent.toDomainEvent()  }
 }
 
-fun com.eventstore.dbclient.RecordedEvent.toDomainEvent(): DomainEvent{
+fun com.eventstore.dbclient.RecordedEvent.toDomainEvent(): IDomainEvent{
     val eventTypeName = this.eventType
 
     val eventClass = Class.forName(eventTypeName)
@@ -31,10 +31,10 @@ fun com.eventstore.dbclient.RecordedEvent.toDomainEvent(): DomainEvent{
     val eventDataJson: String=this.eventData.decodeToString()
     val eventMetaJson: String=this.userMetadata.decodeToString() //TODO headers not managed
 
-    return mapper.readValue(eventDataJson,eventClass) as DomainEvent
+    return mapper.readValue(eventDataJson,eventClass) as IDomainEvent
 }
 
-inline fun <reified T: DomainEvent>T.toEventData(header: Map<String,String>): EventData {
+inline fun <reified T: IDomainEvent>T.toEventData(header: Map<String,String>): EventData {
     val eventId = this.messageId;
     val eventType = this::class.qualifiedName!!
     //val

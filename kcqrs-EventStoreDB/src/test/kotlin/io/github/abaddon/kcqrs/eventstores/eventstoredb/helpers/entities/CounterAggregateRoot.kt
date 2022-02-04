@@ -1,7 +1,7 @@
 package io.github.abaddon.kcqrs.eventstores.eventstoredb.helpers.entities
 
 import io.github.abaddon.kcqrs.core.domain.AggregateRoot
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
+import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.eventstores.eventstoredb.helpers.events.CounterDecreaseEvent
 import io.github.abaddon.kcqrs.eventstores.eventstoredb.helpers.events.CounterIncreasedEvent
 import io.github.abaddon.kcqrs.eventstores.eventstoredb.helpers.events.CounterInitialisedEvent
@@ -11,10 +11,10 @@ data class CounterAggregateRoot private constructor(
     override val id: CounterAggregateId,
     override val version: Long,
     val counter: Int,
-    override val uncommittedEvents: MutableCollection<DomainEvent>
+    override val uncommittedEvents: MutableCollection<IDomainEvent>
 ) : AggregateRoot() {
 
-    constructor() : this(CounterAggregateId(), 0L, 0, ArrayList<DomainEvent>())
+    constructor() : this(CounterAggregateId(), 0L, 0, ArrayList<IDomainEvent>())
     //constructor(id: CounterAggregateId) : this(CounterAggregateId(), 0L, 0)
 
     companion object {
