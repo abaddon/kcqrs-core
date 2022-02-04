@@ -1,2 +1,1 @@
-rootProject.name = "kotlin-cqrs"
-
+rootProject.name = "kcqrs-core"

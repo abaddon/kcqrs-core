@@ -2,16 +2,15 @@ package io.github.abaddon.kcqrs.core.domain
 
 import io.github.abaddon.kcqrs.core.IAggregate
 import io.github.abaddon.kcqrs.core.IRouteEvents
-import io.github.abaddon.kcqrs.core.domain.messages.events.DomainEvent
-import io.github.abaddon.kcqrs.helpers.throwHandlerNotFound
+import io.github.abaddon.kcqrs.core.domain.messages.events.IEvent
+import io.github.abaddon.kcqrs.core.helpers.throwHandlerNotFound
 import java.lang.reflect.Method
 import kotlin.reflect.KClass
 
 class ConventionEventRouter(private var throwOnApplyNotFound: Boolean) : IRouteEvents {
 
-    private val handlers: MutableMap<String, (event: DomainEvent) -> IAggregate> = mutableMapOf()
+    private val handlers: MutableMap<String, (event: IEvent) -> IAggregate> = mutableMapOf()
     private lateinit var registered: IAggregate;
-
 
     constructor() : this(true)
 
@@ -20,18 +19,12 @@ class ConventionEventRouter(private var throwOnApplyNotFound: Boolean) : IRouteE
     }
 
 
-    override fun register(klass: KClass<*>, handler: (event: DomainEvent) -> IAggregate) {
+    override fun register(klass: KClass<*>, handler: (event: IEvent) -> IAggregate) {
         register(klass.simpleName!!, handler)
     }
 
     override fun register(aggregate: IAggregate) {
         registered = aggregate
-//        val applyMethods = aggregate::class.declaredMemberFunctions
-//        .filter { method -> method.name == "apply" && method.valueParameters.size ==1 }
-//            .map { method -> mapOf(
-//                Pair("messageType", method.valueParameters.first().type.toString()),
-//                Pair("method", method)
-//            ) }
         val applyMethods = aggregate::class.java.declaredMethods
             .filter { method -> method.name == "apply" && method.parameterCount ==1 }
             .map { method -> mapOf(
@@ -43,13 +36,14 @@ class ConventionEventRouter(private var throwOnApplyNotFound: Boolean) : IRouteE
             val elementType = applyMethod["messageType"] as String
             val method = applyMethod["method"] as Method
             method.isAccessible = true
-            val handler: (event: DomainEvent) -> IAggregate = { e: DomainEvent -> method.invoke(aggregate,e) as IAggregate }
-            handlers[elementType] = handler
+            val handler: (event: IEvent) -> IAggregate = { e: IEvent -> method.invoke(aggregate,e) as IAggregate }
+            register(elementType,handler)
+            //handlers[elementType] = handler
         }
 
     }
 
-    override fun dispatch(eventMessage: DomainEvent): IAggregate {
+    override fun dispatch(eventMessage: IEvent): IAggregate {
         val handler = handlers[eventMessage::class.simpleName]
         var newAggregate: IAggregate = registered;
         if(handler != null){
@@ -60,7 +54,7 @@ class ConventionEventRouter(private var throwOnApplyNotFound: Boolean) : IRouteE
          return newAggregate;
     }
 
-    private fun register(messageType: String, handler: (event: DomainEvent) -> IAggregate) {
+    private fun register(messageType: String, handler: (event: IEvent) -> IAggregate) {
         handlers[messageType] = handler
     }
 
