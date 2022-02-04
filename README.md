@@ -10,7 +10,7 @@ A Kotlin CQRS library based on [C# Muflone library](https://github.com/CQRS-Mufl
 
 
 ### Example
-In this example I want to show you how use this library implementing a simple aggregator with the capability to increase a value.
+In this example I want to show you how use this library implementing a simple aggregate with the capability to increase a value.
 
 The full example is available [here](https://github.com/abaddon/kcqrs-example)
 
