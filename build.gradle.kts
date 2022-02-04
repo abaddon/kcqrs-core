@@ -1,6 +1,6 @@
 
 group = "io.github.abaddon.kcqrs"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 
 object Meta {
     const val desc = "KCQRS Core library"
