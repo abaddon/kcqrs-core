@@ -6,10 +6,13 @@ A Kotlin CQRS library based on [C# Muflone library](https://github.com/CQRS-Mufl
 
 :warning: At the moment the part related to the read model is missing
 
+### Other libraries
+- [kcqrs-test](https://github.com/abaddon/kcqrs-test) library to easilly test: commands, aggregate, and events 
+- [kcqrs-EventStoreDB](https://github.com/abaddon/kcqrs-EventStoreDB)  Implementation of EventStoreDB as Repository
+- [kcqrs-example](https://github.com/abaddon/kcqrs-example)  KCQRS examples
 
 ### Architecture
 ![kcqrs-schema](docs/kcqrs-schema.jpg)
-
 
 ### Example
 In this example I want to show you how use this library implementing a simple aggregate with the capability to increase a value.
@@ -133,7 +136,3 @@ We could have multiple repositories and for this reason at the moment this libra
 At the moment, [EventStoreDB](https://www.eventstore.com/eventstoredb) is the unique repository implemented and it's available at this link:
 [https://github.com/abaddon/kcqrs-EventStoreDB](https://github.com/abaddon/kcqrs-EventStoreDB)
 
-### Other libraries
-- [kcqrs-test](https://github.com/abaddon/kcqrs-test) library to easilly test: commands, aggregate, and events 
-- [kcqrs-EventStoreDB](https://github.com/abaddon/kcqrs-EventStoreDB)  Implementation of EventStoreDB as Repository
-- [kcqrs-example](https://github.com/abaddon/kcqrs-example)  KCQRS examples
