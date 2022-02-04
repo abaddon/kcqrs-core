@@ -1,5 +1,5 @@
 [![Java CI with Gradle](https://github.com/abaddon/kotlin-cqrs/actions/workflows/gradle.yml/badge.svg)](https://github.com/abaddon/kotlin-cqrs/actions/workflows/gradle.yml)
-[![codecov](https://codecov.io/gh/abaddon/kotlin-cqrs/branch/main/graph/badge.svg?token=1N8KGK99QV)](https://codecov.io/gh/abaddon/kotlin-cqrs)
+[![codecov](https://codecov.io/gh/abaddon/kcqrs-core/branch/main/graph/badge.svg?token=1N8KGK99QV)](https://codecov.io/gh/abaddon/kcqrs-core)
 # kotlin-cqrs (Kcqrs)
 A Kotlin CQRS library based on [C# Muflone library](https://github.com/CQRS-Muflone/Muflone)
 
