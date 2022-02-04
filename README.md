@@ -4,6 +4,8 @@
 
 A Kotlin CQRS library based on [C# Muflone library](https://github.com/CQRS-Muflone/Muflone)
 
+:warning: At the moment the part related to the read model is missing
+
 
 ### Architecture
 ![kcqrs-schema](docs/kcqrs-schema.jpg)
@@ -130,3 +132,8 @@ If we need a different way to apply the events to the aggregate, it's possible t
 We could have multiple repositories and for this reason at the moment this library offers only an interface `IRepository`.
 At the moment, [EventStoreDB](https://www.eventstore.com/eventstoredb) is the unique repository implemented and it's available at this link:
 [https://github.com/abaddon/kcqrs-EventStoreDB](https://github.com/abaddon/kcqrs-EventStoreDB)
+
+### Other libraries
+- [kcqrs-test](https://github.com/abaddon/kcqrs-test) library to easilly test: commands, aggregate, and events 
+- [kcqrs-EventStoreDB](https://github.com/abaddon/kcqrs-EventStoreDB)  Implementation of EventStoreDB as Repository
+- [kcqrs-example](https://github.com/abaddon/kcqrs-example)  KCQRS examples
