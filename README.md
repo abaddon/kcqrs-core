@@ -1,4 +1,5 @@
 # kotlin-cqrs (Kcqrs)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.abaddon.kcqrs/kcqrs-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.abaddon.kcqrs/kcqrs-core)
 [![Java CI with Gradle](https://github.com/abaddon/kotlin-cqrs/actions/workflows/gradle.yml/badge.svg)](https://github.com/abaddon/kotlin-cqrs/actions/workflows/gradle.yml)
 [![codecov](https://codecov.io/gh/abaddon/kcqrs-core/branch/main/graph/badge.svg?token=1N8KGK99QV)](https://codecov.io/gh/abaddon/kcqrs-core)
 
