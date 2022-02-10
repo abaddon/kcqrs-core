@@ -17,7 +17,7 @@ internal class EventsHelpersKtTest {
         val expectedAggregate=DummyAggregateRoot(dummyAggregateId,0,0)
 
         val initialAggregate=DummyAggregateRoot(dummyAggregateId,0,0)
-        val actualAggregate = list.foldEvents(initialAggregate)
+        val actualAggregate = list.foldEvents(initialAggregate, Long.MAX_VALUE)
 
         assertEquals(expectedAggregate,actualAggregate,"it should be the same")
     }
@@ -31,7 +31,7 @@ internal class EventsHelpersKtTest {
         val expectedAggregate=DummyAggregateRoot(dummyAggregateId,1,2)
 
         val initialAggregate=DummyAggregateRoot(dummyAggregateId,0,0)
-        val actualAggregate = list.foldEvents(initialAggregate)
+        val actualAggregate = list.foldEvents(initialAggregate, Long.MAX_VALUE)
 
         assertEquals(expectedAggregate,actualAggregate,"it should be the same")
     }
@@ -46,7 +46,7 @@ internal class EventsHelpersKtTest {
         val expectedAggregate=DummyAggregateRoot(dummyAggregateId,2,6)
 
         val initialAggregate=DummyAggregateRoot(dummyAggregateId,0,0)
-        val actualAggregate = list.foldEvents(initialAggregate)
+        val actualAggregate = list.foldEvents(initialAggregate, Long.MAX_VALUE)
 
         assertEquals(expectedAggregate,actualAggregate,"it should be the same")
     }
@@ -61,7 +61,7 @@ internal class EventsHelpersKtTest {
         val initialAggregate=DummyAggregateRoot(dummyAggregateId,0,0)
 
         assertFailsWith<IllegalArgumentException>{
-            list.foldEvents(initialAggregate)
+            list.foldEvents(initialAggregate, Long.MAX_VALUE)
         }
     }
 
@@ -77,7 +77,7 @@ internal class EventsHelpersKtTest {
         val initialAggregate=DummyAggregateRoot(dummyAggregateId,0,0)
 
         assertFailsWith<IllegalArgumentException>{
-            list.foldEvents(initialAggregate)
+            list.foldEvents(initialAggregate, Long.MAX_VALUE)
         }
     }
 

@@ -103,63 +103,62 @@ internal class AggregateRootTest {
     }
 
 
-}
+    private data class FakeIdentity(val value: Int) : IIdentity {
+        override fun valueAsString(): String {
+            return value.toString()
+        }
+    };
 
-data class FakeIdentity(val value: Int) : IIdentity {
-    override fun valueAsString(): String {
-        return value.toString()
+    private data class DummyAggregate private constructor(
+        override val id: IIdentity,
+        override val version: Long,
+        override val uncommittedEvents: MutableCollection<IDomainEvent>
+    ) : AggregateRoot() {
+
+        fun generateFakeEvent1(): DummyAggregate {
+            return raiseEvent(DummyEvent(id)) as DummyAggregate
+        }
+
+        fun generateFakeEvent2(): DummyAggregate {
+            return raiseEvent(DummyEvent2(id)) as DummyAggregate
+        }
+
+        private fun apply(event: DummyEvent): DummyAggregate {
+            return copy(id = event.aggregateId, version = version + 1)
+        }
+
+        private fun apply(event: DummyEvent2): DummyAggregate {
+            return copy(id = event.aggregateId, version = version + 5)
+        }
+
+        fun executeEvent1(event: DummyEvent): DummyAggregate {
+            return copy(id = event.aggregateId, version = version + 1)
+        }
+
+        fun executeEvent2(event: DummyEvent2): DummyAggregate {
+            return copy(id = event.aggregateId, version = version + 5)
+        }
+
+        companion object {
+            fun create(id: IIdentity, version: Long): DummyAggregate = DummyAggregate(id, version, ArrayList<IDomainEvent>())
+        }
     }
-};
 
-data class DummyAggregate private constructor(
-    override val id: IIdentity,
-    override val version: Long,
-    override val uncommittedEvents: MutableCollection<IDomainEvent>
-) : AggregateRoot() {
-
-    fun generateFakeEvent1(): DummyAggregate {
-        return raiseEvent(DummyEvent(id)) as DummyAggregate
+    private data class DummyEvent(
+        override val aggregateId: IIdentity
+    ) : IDomainEvent {
+        override val aggregateType: String = DummyAggregate.javaClass.simpleName
+        override val version: Int = 1
+        override val header: EventHeader = EventHeader.create("DummyAggregate")
+        override val messageId: UUID = UUID.randomUUID()
     }
 
-    fun generateFakeEvent2(): DummyAggregate {
-        return raiseEvent(DummyEvent2(id)) as DummyAggregate
+    private data class DummyEvent2(
+        override val aggregateId: IIdentity
+    ) : IDomainEvent {
+        override val aggregateType: String = DummyAggregate.javaClass.simpleName
+        override val version: Int = 1
+        override val header: EventHeader = EventHeader.create("DummyAggregate")
+        override val messageId: UUID = UUID.randomUUID()
     }
-
-    private fun apply(event: DummyEvent): DummyAggregate {
-        return copy(id = event.aggregateId, version = version + 1)
-    }
-
-    private fun apply(event: DummyEvent2): DummyAggregate {
-        return copy(id = event.aggregateId, version = version + 5)
-    }
-
-    fun executeEvent1(event: DummyEvent): DummyAggregate {
-        return copy(id = event.aggregateId, version = version + 1)
-    }
-
-    fun executeEvent2(event: DummyEvent2): DummyAggregate {
-        return copy(id = event.aggregateId, version = version + 5)
-    }
-
-    companion object {
-        fun create(id: IIdentity, version: Long): DummyAggregate = DummyAggregate(id, version, ArrayList<IDomainEvent>())
-    }
-}
-
-data class DummyEvent(
-    override val aggregateId: IIdentity
-) : IDomainEvent {
-    override val aggregateType: String = DummyAggregate.javaClass.simpleName
-    override val version: Int = 1
-    override val header: EventHeader = EventHeader.create("DummyAggregate")
-    override val messageId: UUID = UUID.randomUUID()
-}
-
-data class DummyEvent2(
-    override val aggregateId: IIdentity
-) : IDomainEvent {
-    override val aggregateType: String = DummyAggregate.javaClass.simpleName
-    override val version: Int = 1
-    override val header: EventHeader = EventHeader.create("DummyAggregate")
-    override val messageId: UUID = UUID.randomUUID()
 }
