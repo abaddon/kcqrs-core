@@ -1,6 +1,5 @@
 
 group = "io.github.abaddon.kcqrs"
-version = "0.0.2"
 
 object Meta {
     const val desc = "KCQRS Core library"
@@ -26,10 +25,24 @@ object Versions {
 plugins {
     kotlin("jvm") version "1.6.0"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
+    id("com.palantir.git-version") version "0.13.0"
     jacoco
     `maven-publish`
     signing
 }
+
+val gitVersion: groovy.lang.Closure<String> by extra
+val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
+val details = versionDetails()
+
+val lastTag=details.lastTag.substring(1)
+val snapshotTag= {
+    val list=lastTag.split(".")
+    val third=(list.last().toInt() + 1).toString()
+    "${list[0]}.${list[1]}.$third-SNAPSHOT"
+}
+version = if(details.isCleanTag) lastTag else snapshotTag()
+
 
 publishing {
     publications {
