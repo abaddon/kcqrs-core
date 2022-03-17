@@ -1,4 +1,3 @@
-
 group = "io.github.abaddon.kcqrs"
 
 object Meta {
@@ -42,15 +41,6 @@ val snapshotTag= {
     "${list[0]}.${list[1]}.$third-SNAPSHOT"
 }
 version = if(details.isCleanTag) lastTag else snapshotTag()
-
-
-publishing {
-    publications {
-        create<MavenPublication>("kcqrs-core") {
-            from(components["kotlin"])
-        }
-    }
-}
 
 repositories {
     mavenCentral()
@@ -118,7 +108,8 @@ publishing {
             groupId = project.group.toString()
             artifactId = project.name
             version = project.version.toString()
-            from(components["kotlin"])
+            //from(components["kotlin"])
+            artifact(tasks["jar"])
             artifact(tasks["sourcesJar"])
             artifact(tasks["javadocJar"])
             pom {
