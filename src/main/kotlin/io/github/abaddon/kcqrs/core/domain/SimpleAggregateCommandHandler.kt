@@ -8,13 +8,18 @@ import java.util.*
 class SimpleAggregateCommandHandler<TAggregate: IAggregate> (
     override val repository: IAggregateRepository<TAggregate>,
 ): IAggregateCommandHandler<TAggregate>{
-    override suspend fun handle(command: ICommand<TAggregate>, updateHeaders: () -> Map<String,String>) {
+    override suspend fun handle(command: ICommand<TAggregate>, updateHeaders: () -> Map<String,String>): TAggregate? {
         val aggregate=repository.getById(command.aggregateID)
         val newAggregate=command.execute(aggregate)
-        repository.save(newAggregate, UUID.randomUUID(), updateHeaders)
+        return try {
+            repository.save(newAggregate, UUID.randomUUID(), updateHeaders)
+            newAggregate
+        }catch (e: Exception){
+            null
+        }
     }
 
-    override suspend fun handle(command: ICommand<TAggregate>) {
+    override suspend fun handle(command: ICommand<TAggregate>): TAggregate? =
         handle(command) { mapOf<String, String>() }
-    }
+
 }

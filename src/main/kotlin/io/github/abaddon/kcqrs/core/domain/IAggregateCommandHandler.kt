@@ -7,8 +7,8 @@ import io.github.abaddon.kcqrs.core.persistence.IAggregateRepository
 interface IAggregateCommandHandler<TAggregate: IAggregate> {
     val repository: IAggregateRepository<TAggregate>
 
-    suspend fun handle(command: ICommand<TAggregate>)
+    suspend fun handle(command: ICommand<TAggregate>): TAggregate?
 
-    suspend fun handle(command: ICommand<TAggregate>, updateHeaders: () -> Map<String,String>)
+    suspend fun handle(command: ICommand<TAggregate>, updateHeaders: () -> Map<String,String>): TAggregate?
 
 }
