@@ -44,7 +44,7 @@ internal class EventHeaderTest{
     }
 
     @Test
-    fun `Given a "who" when add it to the EventHeader then the EventHeader has the same "who"`(){
+    fun `Given a who when add it to the EventHeader then the EventHeader has the same who`(){
         val kClass = "AggregateRoot";
         val correlationId = UUID.randomUUID()
         val who = "I don't know"

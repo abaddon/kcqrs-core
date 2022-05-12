@@ -147,7 +147,7 @@ internal class AggregateRootTest {
     private data class DummyEvent(
         override val aggregateId: IIdentity
     ) : IDomainEvent {
-        override val aggregateType: String = DummyAggregate.javaClass.simpleName
+        override val aggregateType: String = DummyAggregate::class.java.simpleName
         override val version: Int = 1
         override val header: EventHeader = EventHeader.create("DummyAggregate")
         override val messageId: UUID = UUID.randomUUID()
@@ -156,7 +156,7 @@ internal class AggregateRootTest {
     private data class DummyEvent2(
         override val aggregateId: IIdentity
     ) : IDomainEvent {
-        override val aggregateType: String = DummyAggregate.javaClass.simpleName
+        override val aggregateType: String = DummyAggregate::class.java.simpleName
         override val version: Int = 1
         override val header: EventHeader = EventHeader.create("DummyAggregate")
         override val messageId: UUID = UUID.randomUUID()

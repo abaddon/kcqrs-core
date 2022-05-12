@@ -57,6 +57,6 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
     override fun emptyAggregate(aggregateId: IIdentity): TAggregate = _emptyAggregate(aggregateId)
 
     override fun publish(events: List<IDomainEvent>) {
-        projectionHandlers.forEach{projectionHandlers -> projectionHandlers.onEvents(events)}
+        projectionHandlers.forEach { projectionHandlers -> projectionHandlers.onEvents(events) }
     }
 }

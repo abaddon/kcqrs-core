@@ -2,6 +2,7 @@ package io.github.abaddon.kcqrs.core.persistence
 
 import io.github.abaddon.kcqrs.core.IIdentity
 import io.github.abaddon.kcqrs.core.domain.AggregateRoot
+import io.github.abaddon.kcqrs.core.domain.Result
 import io.github.abaddon.kcqrs.core.domain.messages.events.EventHeader
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.projections.IProjection
@@ -61,15 +62,20 @@ internal class InMemoryEventStoreRepositoryTest{
         val aggregate= DummyAggregate(identity,0, committedEvents.toMutableList())
         repository.save(aggregate, UUID.randomUUID())
 
-        //Persist the last event
-        val aggregateLoaded = repository.getById(identity)
         val uncommittedEvents= listOf(DummyEvent(identity))
-        val uncommittedAggregate = aggregateLoaded.copy(uncommittedEvents = uncommittedEvents.toMutableList())
-        repository.save(uncommittedAggregate, UUID.randomUUID())
+        val expectedEvents = committedEvents.plus(uncommittedEvents)
+
+        //Persist the last event
+        when(val resultGet= repository.getById(identity)){
+            is Result.Invalid -> assert(false)
+            is Result.Valid -> {
+                val aggregateLoaded=resultGet.value
+                val uncommittedAggregate = aggregateLoaded.copy(uncommittedEvents = uncommittedEvents.toMutableList())
+                repository.save(uncommittedAggregate, UUID.randomUUID())
+            }
+        }
 
         val actualEventsStored=repository.loadEventsFromStorage(identity)
-
-        val expectedEvents = committedEvents.plus(uncommittedEvents)
 
         assertEquals(expectedEvents,actualEventsStored)
     }

@@ -169,18 +169,24 @@ The rehydrate aggregate is used to execute the command.
 The output of the execution is a new aggregate that will be saved on the repository.
 
 ```kotlin
-class SimpleAggregateCommandHandler<TAggregate: IAggregate> (
-    override val repository: IAggregateRepository<TAggregate>,
-): IAggregateCommandHandler<TAggregate> {
-    override suspend fun handle(command: ICommand<TAggregate>, updateHeaders: () -> Map<String, String>) {
-        val aggregate = repository.getById(command.aggregateID)
-        val newAggregate = command.execute(aggregate)
+class SimpleAggregateCommandHandler<TAggregate : IAggregate>(
+  override val repository: IAggregateRepository<TAggregate>,
+) : IAggregateCommandHandler<TAggregate> {
+  
+  override suspend fun handle(
+    command: ICommand<TAggregate>,
+    updateHeaders: () -> Map<String, String>
+  ): Result<Exception, TAggregate> =
+    when (val actualAggregateResult = repository.getById(command.aggregateID)) {
+      is Result.Valid -> {
+        val newAggregate = command.execute(actualAggregateResult.value)
         repository.save(newAggregate, UUID.randomUUID(), updateHeaders)
+      }
+      is Result.Invalid -> actualAggregateResult
     }
 
-    override suspend fun handle(command: ICommand<TAggregate>) {
-        handle(command) { mapOf<String, String>() }
-    }
+  override suspend fun handle(command: ICommand<TAggregate>): Result<Exception, TAggregate> =
+    handle(command) { mapOf<String, String>() }
 }
 ```
 
