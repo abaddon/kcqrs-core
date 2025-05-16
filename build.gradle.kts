@@ -4,8 +4,6 @@ object Meta {
     const val desc = "KCQRS Core library"
     const val license = "Apache-2.0"
     const val githubRepo = "abaddon/kcqrs-core"
-    const val release = "https://s01.oss.sonatype.org/service/local/"
-    const val snapshot = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
     const val developerName = "Stefano Longhi"
     const val developerOrganization = ""
     const val organizationUrl = "https://github.com/abaddon"
@@ -15,7 +13,6 @@ object Versions {
     const val slf4jVersion = "2.0.12" // Updated from 1.7.25
     const val kotlinVersion = "1.9.22" // Updated from 1.6.0
     const val kotlinCoroutineVersion = "1.8.0" // Updated from 1.6.0
-    const val jacksonModuleKotlinVersion = "2.16.1" // Updated from 2.13.0
     const val junitJupiterVersion = "5.10.2" // Updated from 5.7.0
     const val jacocoToolVersion = "0.8.11" // Updated from 0.8.7
     const val jvmTarget = "21" // Updated from 11
@@ -30,7 +27,6 @@ plugins {
     signing
 }
 
-val gitVersion: groovy.lang.Closure<String> by extra
 val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
 val details = versionDetails()
 
@@ -92,10 +88,8 @@ java {
 signing {
     val signingKey = providers
         .environmentVariable("GPG_SIGNING_KEY")
-        .forUseAtConfigurationTime()
     val signingPassphrase = providers
         .environmentVariable("GPG_SIGNING_PASSPHRASE")
-        .forUseAtConfigurationTime()
     if (signingKey.isPresent && signingPassphrase.isPresent) {
         useInMemoryPgpKeys(signingKey.get(), signingPassphrase.get())
         val extension = extensions
@@ -126,9 +120,9 @@ publishing {
                 }
                 developers {
                     developer {
-                        name.set("${Meta.developerName}")
-                        organization.set("${Meta.developerOrganization}")
-                        organizationUrl.set("${Meta.organizationUrl}")
+                        name.set(Meta.developerName)
+                        organization.set(Meta.developerOrganization)
+                        organizationUrl.set(Meta.organizationUrl)
                     }
                 }
                 scm {
@@ -152,19 +146,12 @@ publishing {
 
 nexusPublishing {
     repositories {
+        // see https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#configuration
         sonatype {
-            nexusUrl.set(uri(Meta.release))
-            snapshotRepositoryUrl.set(uri(Meta.snapshot))
-            val ossrhUsername = providers
-                .environmentVariable("OSSRH_USERNAME")
-                .forUseAtConfigurationTime()
-            val ossrhPassword = providers
-                .environmentVariable("OSSRH_PASSWORD")
-                .forUseAtConfigurationTime()
-            if (ossrhUsername.isPresent && ossrhPassword.isPresent) {
-                username.set(ossrhUsername.get())
-                password.set(ossrhPassword.get())
-            }
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+            username = providers.environmentVariable("SONATYPE_USERNAME")
+            password = providers.environmentVariable("SONATYPE_TOKEN")
         }
     }
 }
