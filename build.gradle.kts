@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 group = "io.github.abaddon.kcqrs"
 
 object Meta {
@@ -10,18 +12,18 @@ object Meta {
 }
 
 object Versions {
-    const val slf4jVersion = "2.0.12" // Updated from 1.7.25
-    const val kotlinVersion = "1.9.22" // Updated from 1.6.0
-    const val kotlinCoroutineVersion = "1.8.0" // Updated from 1.6.0
-    const val junitJupiterVersion = "5.10.2" // Updated from 5.7.0
-    const val jacocoToolVersion = "0.8.11" // Updated from 0.8.7
-    const val jvmTarget = "21" // Updated from 11
+    const val slf4jVersion = "2.0.12"
+    const val kotlinVersion = "2.1.21"
+    const val kotlinCoroutineVersion = "1.10.2"
+    const val junitJupiterVersion = "5.10.2"
+    const val jacocoToolVersion = "0.8.11"
+    const val jvmTarget = "21"
 }
 
 plugins {
-    kotlin("jvm") version "1.9.22" // Updated from 1.6.0
-    id("io.github.gradle-nexus.publish-plugin") version "2.0.0" // Updated from 1.1.0
-    id("com.palantir.git-version") version "3.0.0" // Updated from 0.13.0
+    kotlin("jvm") version "2.1.21"
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
+    id("com.palantir.git-version") version "3.0.0"
     jacoco
     `maven-publish`
     signing
@@ -74,7 +76,7 @@ tasks.jacocoTestReport {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
-    kotlinOptions.jvmTarget = Versions.jvmTarget
+    compilerOptions.jvmTarget.set(JvmTarget.fromTarget(Versions.jvmTarget))
 }
 
 java {
