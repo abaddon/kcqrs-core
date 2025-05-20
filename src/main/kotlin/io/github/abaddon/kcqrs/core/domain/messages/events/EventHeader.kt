@@ -4,7 +4,7 @@ import io.github.abaddon.kcqrs.core.domain.messages.HeadersType
 import java.time.Instant
 import java.util.*
 
-data class EventHeader private constructor(
+data class EventHeader(
     val standard: Map<String, String>,
     val custom: Map<String, String>
 ) {

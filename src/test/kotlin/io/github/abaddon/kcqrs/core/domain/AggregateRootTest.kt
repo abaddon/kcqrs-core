@@ -109,7 +109,7 @@ internal class AggregateRootTest {
         }
     };
 
-    private data class DummyAggregate private constructor(
+    private data class DummyAggregate(
         override val id: IIdentity,
         override val version: Long,
         override val uncommittedEvents: MutableCollection<IDomainEvent>

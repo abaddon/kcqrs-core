@@ -1,4 +1,11 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+plugins {
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.nexus.publish)
+    alias(libs.plugins.git.version)
+    jacoco
+    `maven-publish`
+    signing
+}
 
 group = "io.github.abaddon.kcqrs"
 
@@ -12,22 +19,9 @@ object Meta {
 }
 
 object Versions {
-    const val log4j = "2.24.3"
-    const val kotlinVersion = "2.1.21"
-    const val kotlinCoroutineVersion = "1.10.2"
-    const val junitJupiterVersion = "5.10.2"
-    const val jacocoToolVersion = "0.8.11"
-    const val jvmTarget = "21"
+    const val jacocoToolVersion = "0.8.10"
 }
 
-plugins {
-    kotlin("jvm") version "2.1.21"
-    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
-    id("com.palantir.git-version") version "3.0.0"
-    jacoco
-    `maven-publish`
-    signing
-}
 
 val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
 val details = versionDetails()
@@ -38,7 +32,7 @@ val snapshotTag = {
     val third = (list.last().toInt() + 1).toString()
     "${list[0]}.${list[1]}.$third-SNAPSHOT"
 }
-version = if(details.isCleanTag) lastTag else snapshotTag()
+version = if (details.isCleanTag) lastTag else snapshotTag()
 
 repositories {
     mavenCentral()
@@ -46,16 +40,12 @@ repositories {
 
 dependencies {
     //Core
-    implementation("org.apache.logging.log4j:log4j-api:${Versions.log4j}")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlinVersion}")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinCoroutineVersion}")
+    //implementation(libs.kotlin)
+    implementation(libs.bundles.ksqrs.core)
 
     //Test
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:${Versions.junitJupiterVersion}")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.kotlinCoroutineVersion}")
-    testImplementation("org.apache.logging.log4j:log4j-core:${Versions.log4j}")
-    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:${Versions.log4j}")
+    testImplementation(libs.bundles.ksqrs.core.test)
 }
 
 jacoco {
@@ -77,8 +67,8 @@ tasks.jacocoTestReport {
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
-    compilerOptions.jvmTarget.set(JvmTarget.fromTarget(Versions.jvmTarget))
+kotlin {
+    jvmToolchain(21)
 }
 
 java {

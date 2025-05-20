@@ -82,7 +82,7 @@ internal class EventsHelpersKtTest {
     }
 
 
-    private data class DummyEvent private constructor(
+    private data class DummyEvent(
         override val messageId: UUID,
         override val aggregateId: DummyAggregateId,
         override val version: Int = 1,

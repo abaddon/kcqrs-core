@@ -1,0 +1,42 @@
+# Version catalog is a central place for you to declare and version dependencies
+# https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
+# https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
+
+[versions]
+kotlin = "2.1.20"
+kotlinxCoroutines = "1.10.2"
+log4j = "2.24.3"
+nexus-publish-plugin = "2.0.0"
+git-version = "3.0.0"
+junit = "5.10.2"
+
+[libraries]
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlin-coroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+
+log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
+log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
+log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
+
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+
+# Libraries can be bundled together for easier import
+[bundles]
+ksqrs-core = [
+    "kotlin-coroutines",
+    "kotlin-reflect",
+    "log4j-api"
+]
+
+ksqrs-core-test = [
+    "junit-jupiter",
+    "kotlin-coroutinesTest",
+    "log4j-core",
+    "log4j-slf4j-impl"
+]
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexus-publish-plugin" }
+git-version = { id = "com.palantir.git-version", version.ref = "git-version" }

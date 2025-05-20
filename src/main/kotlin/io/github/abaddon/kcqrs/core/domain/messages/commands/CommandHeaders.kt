@@ -4,7 +4,7 @@ import io.github.abaddon.kcqrs.core.domain.messages.HeadersType
 import java.time.Instant
 import java.util.*
 
-data class CommandHeaders private constructor(
+data class CommandHeaders(
     val standard: Map<String, String>,
     val custom: Map<String, String>
 ) {
