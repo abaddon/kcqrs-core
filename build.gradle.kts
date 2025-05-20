@@ -18,11 +18,6 @@ object Meta {
     const val organizationUrl = "https://github.com/abaddon"
 }
 
-object Versions {
-    const val jacocoToolVersion = "0.8.10"
-}
-
-
 val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
 val details = versionDetails()
 
@@ -40,16 +35,17 @@ repositories {
 
 dependencies {
     //Core
-    //implementation(libs.kotlin)
+    compileOnly(libs.bundles.log)
     implementation(libs.bundles.ksqrs.core)
 
     //Test
     testImplementation(kotlin("test"))
+    testImplementation(libs.bundles.log.test)
     testImplementation(libs.bundles.ksqrs.core.test)
 }
 
 jacoco {
-    toolVersion = Versions.jacocoToolVersion
+    toolVersion = "0.8.10"
 }
 
 tasks.withType<Test> {

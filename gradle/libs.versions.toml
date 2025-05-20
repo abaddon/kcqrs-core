@@ -6,6 +6,7 @@
 kotlin = "2.1.20"
 kotlinxCoroutines = "1.10.2"
 log4j = "2.24.3"
+slf4j-api ="2.0.17"
 nexus-publish-plugin = "2.0.0"
 git-version = "3.0.0"
 junit = "5.10.2"
@@ -15,7 +16,7 @@ kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref =
 kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlin-coroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 
-log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-api" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 log4j-slf4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
 
@@ -23,17 +24,22 @@ junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "jun
 
 # Libraries can be bundled together for easier import
 [bundles]
+
+log = ["slf4j-api"]
+log-test =  [
+    "slf4j-api",
+    "log4j-core",
+    "log4j-slf4j-impl"
+]
+
 ksqrs-core = [
     "kotlin-coroutines",
-    "kotlin-reflect",
-    "log4j-api"
+    "kotlin-reflect"
 ]
 
 ksqrs-core-test = [
     "junit-jupiter",
-    "kotlin-coroutinesTest",
-    "log4j-core",
-    "log4j-slf4j-impl"
+    "kotlin-coroutinesTest"
 ]
 
 [plugins]
