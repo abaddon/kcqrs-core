@@ -6,7 +6,7 @@ import io.github.abaddon.kcqrs.core.domain.Result
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.exceptions.AggregateVersionException
 import io.github.abaddon.kcqrs.core.helpers.foldEvents
-import org.slf4j.Logger
+import io.github.abaddon.kcqrs.core.helpers.log
 import java.security.InvalidParameterException
 import java.time.Instant
 import java.util.*
@@ -19,7 +19,6 @@ abstract class EventStoreRepository<TAggregate : IAggregate> : IAggregateReposit
         const val AGGREGATE_TYPE_HEADER = "AggregateTypeName"
     }
 
-    abstract val log: Logger
     abstract fun aggregateIdStreamName(aggregateId: IIdentity): String
 
     protected abstract fun persist(
@@ -56,8 +55,11 @@ abstract class EventStoreRepository<TAggregate : IAggregate> : IAggregateReposit
                     )
                 )
             }
-        }catch (e: InvalidParameterException){ Result.Invalid(e) }
-        catch (e: Exception){  Result.Invalid(e) }
+        } catch (e: InvalidParameterException) {
+            Result.Invalid(e)
+        } catch (e: Exception) {
+            Result.Invalid(e)
+        }
 
     }
 

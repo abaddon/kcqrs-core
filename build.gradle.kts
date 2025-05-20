@@ -12,7 +12,7 @@ object Meta {
 }
 
 object Versions {
-    const val slf4jVersion = "2.0.12"
+    const val log4j = "2.24.3"
     const val kotlinVersion = "2.1.21"
     const val kotlinCoroutineVersion = "1.10.2"
     const val junitJupiterVersion = "5.10.2"
@@ -46,7 +46,7 @@ repositories {
 
 dependencies {
     //Core
-    implementation("org.slf4j:slf4j-api:${Versions.slf4jVersion}")
+    implementation("org.apache.logging.log4j:log4j-api:${Versions.log4j}")
     implementation("org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlinVersion}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.kotlinCoroutineVersion}")
 
@@ -54,6 +54,8 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:${Versions.junitJupiterVersion}")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.kotlinCoroutineVersion}")
+    testImplementation("org.apache.logging.log4j:log4j-core:${Versions.log4j}")
+    testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:${Versions.log4j}")
 }
 
 jacoco {

@@ -5,8 +5,6 @@ import io.github.abaddon.kcqrs.core.IIdentity
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.projections.IProjection
 import io.github.abaddon.kcqrs.core.projections.IProjectionHandler
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 class InMemoryEventStoreRepository<TAggregate : IAggregate>(
     private val _streamNameRoot: String,
@@ -15,8 +13,6 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
 
     private val storage = mutableMapOf<String, MutableList<IDomainEvent>>()
     private val projectionHandlers = mutableListOf<IProjectionHandler<*>>()
-
-    override val log: Logger = LoggerFactory.getLogger(this.javaClass.simpleName)
 
     override fun aggregateIdStreamName(aggregateId: IIdentity): String =
         "${_streamNameRoot}.${aggregateId.valueAsString()}"
