@@ -8,111 +8,141 @@ import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.projections.IProjection
 import io.github.abaddon.kcqrs.core.projections.IProjectionKey
 import io.github.abaddon.kcqrs.core.projections.SimpleProjectionHandler
-import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.*
 
-internal class InMemoryEventStoreRepositoryTest{
-    private  val repository = InMemoryEventStoreRepository<DummyAggregate>("InMemoryEventStoreRepositoryTest"){
-        DummyAggregate.empty(it)
+
+@ExperimentalCoroutinesApi
+internal class InMemoryEventStoreRepositoryTest {
+    private val testDispatcher = UnconfinedTestDispatcher()
+    private val testScope = TestScope(testDispatcher)
+    private lateinit var repository: InMemoryEventStoreRepository<DummyAggregate>
+
+
+    @BeforeEach
+    fun setup() {
+        repository = InMemoryEventStoreRepository(
+            "InMemoryEventStoreRepositoryTest",
+            { DummyAggregate.empty(it) },
+            testDispatcher
+        )
     }
+
+    @AfterEach
+    fun tearDown() {
+        repository.cleanup()
+    }
+
     @Test
-    fun `given an aggregateId when get the aggregateIdStream then the streamId contain the aggregateId`(){
-        val  identity= DummyIdentity(1)
+    fun `findById returns emptyAggregate for non-existent aggregate`() = testScope.runTest {
+        val aggregateId = DummyIdentity(1)
+
+        val aggregate = repository.getById(aggregateId)
+        assert(aggregate is Result.Valid<DummyAggregate>)
+        assertEquals((aggregate as Result.Valid<DummyAggregate>).value, repository.emptyAggregate(aggregateId))
+    }
+
+    @Test
+    fun `given an aggregateId when get the aggregateIdStream then the streamId contain the aggregateId`() {
+        val identity = DummyIdentity(1)
         val actualStreamName = repository.aggregateIdStreamName(identity)
         val expectedStreamName = "InMemoryEventStoreRepositoryTest.${identity.valueAsString()}"
-        assertEquals(expectedStreamName,actualStreamName)
+        assertEquals(expectedStreamName, actualStreamName)
     }
 
     @Test
-    fun `given an aggregate with 2 events uncommitted when saved then the events are in the repository`() = runBlocking {
+    fun `given an aggregate with 2 events uncommitted when saved then the aggregate is updated`() =
+        testScope.runTest {
+            // Given
+            val identity = DummyIdentity(1)
+            val uncommittedEvents = listOf(DummyEvent(identity), DummyEvent(identity))
+            val aggregateToPersit = DummyAggregate(identity, 0, uncommittedEvents.toMutableList())
 
-        val  identity= DummyIdentity(1)
-        val uncommittedEvents= listOf(DummyEvent(identity),DummyEvent(identity))
-        val aggregate= DummyAggregate(identity,0, uncommittedEvents.toMutableList())
+            // When
+            repository.save(aggregateToPersit, UUID.randomUUID())
 
-        repository.save(aggregate, UUID.randomUUID())
-
-        val actualEventsStored=repository.loadEventsFromStorage(identity)
-
-        assertEquals(uncommittedEvents,actualEventsStored)
-    }
-
-    @Test
-    fun `given an aggregate with 0 events uncommitted when saved then the no events are in the repository`() = runBlocking {
-
-        val  identity= DummyIdentity(1)
-        val uncommittedEvents= listOf<IDomainEvent>()
-        val aggregate= DummyAggregate(identity,0, uncommittedEvents.toMutableList())
-
-        repository.save(aggregate, UUID.randomUUID())
-
-        val actualEventsStored=repository.loadEventsFromStorage(identity)
-
-        assertEquals(uncommittedEvents,actualEventsStored)
-    }
-
-    @Test
-    fun `given an aggregate with 1 events uncommitted and 2 committed when saved then the events in the repository are 3`() = runBlocking {
-
-        val  identity= DummyIdentity(1)
-        //Persist the first 2 events
-        val committedEvents= listOf(DummyEvent(identity),DummyEvent(identity))
-        val aggregate= DummyAggregate(identity,0, committedEvents.toMutableList())
-        repository.save(aggregate, UUID.randomUUID())
-
-        val uncommittedEvents= listOf(DummyEvent(identity))
-        val expectedEvents = committedEvents.plus(uncommittedEvents)
-
-        //Persist the last event
-        when(val resultGet= repository.getById(identity)){
-            is Result.Invalid -> assert(false)
-            is Result.Valid -> {
-                val aggregateLoaded=resultGet.value
-                val uncommittedAggregate = aggregateLoaded.copy(uncommittedEvents = uncommittedEvents.toMutableList())
-                repository.save(uncommittedAggregate, UUID.randomUUID())
-            }
+            // Then
+            val aggregateFoundResult = repository.getById(identity) as Result.Valid<DummyAggregate>
+            assertThat(aggregateFoundResult.value.version).isEqualTo(2)
+            assertThat(aggregateFoundResult.value.uncommittedEvents).isEmpty()
         }
 
-        val actualEventsStored=repository.loadEventsFromStorage(identity)
+    @Test
+    fun `given an aggregate with 0 events uncommitted when saved then the no events are in the repository`() =
+        testScope.runTest {
+            // Given
+            val identity = DummyIdentity(1)
+            val uncommittedEvents = listOf<IDomainEvent>()
+            val aggregate = DummyAggregate(identity, 0, uncommittedEvents.toMutableList())
 
-        assertEquals(expectedEvents,actualEventsStored)
-    }
+            // When
+            repository.save(aggregate, UUID.randomUUID())
+
+            // Then
+            val aggregateFoundResult = repository.getById(identity) as Result.Valid<DummyAggregate>
+            assertThat(aggregateFoundResult.value.version).isEqualTo(0)
+            assertThat(aggregateFoundResult.value.uncommittedEvents).isEmpty()
+
+        }
 
     @Test
-    fun `given 2 events when add them then 2 events are in the repository`() = runBlocking {
+    fun `given an aggregate with 1 events uncommitted and 2 committed when saved then the events in the repository are 3`() =
+        testScope.runTest {
+            // Given
+            val identity = DummyIdentity(1)
+            //Persist the first 2 events
+            val committedEvents = listOf(DummyEvent(identity), DummyEvent(identity))
+            val aggregate = DummyAggregate(identity, 0, committedEvents.toMutableList())
+            repository.save(aggregate, UUID.randomUUID())
 
-        val  identity= DummyIdentity(1)
-        val eventsToAdd= listOf<IDomainEvent>()
+            val uncommittedEvents = listOf(DummyEvent(identity))
 
-        repository.addEventsToStorage(identity,eventsToAdd)
+            // When
+            //Persist the last event
+            when (val resultGet = repository.getById(identity)) {
+                is Result.Invalid -> assert(false)
+                is Result.Valid -> {
+                    val aggregateLoaded = resultGet.value
+                    val uncommittedAggregate =
+                        aggregateLoaded.copy(uncommittedEvents = uncommittedEvents.toMutableList())
+                    repository.save(uncommittedAggregate, UUID.randomUUID())
+                }
+            }
 
-        val actualEventsStored=repository.loadEventsFromStorage(identity)
+            // Then
+            val aggregateFoundResult = repository.getById(identity) as Result.Valid<DummyAggregate>
+            assertThat(aggregateFoundResult.value.version).isEqualTo(3)
+            assertThat(aggregateFoundResult.value.uncommittedEvents).isEmpty()
+        }
 
-        assertEquals(eventsToAdd,actualEventsStored)
-    }
 
     @Test
-    fun `given a projectionHandler when an event is persisted then it's published`() = runBlocking {
-
+    fun `given a projectionHandler when an event is persisted then it's published`() = testScope.runTest {
+        //Given
         val repositoryProjection = InMemoryProjectionRepository<DummyProjection>(){
             DummyProjection(it as DummyProjectionKey,0)
         }
         val projectionKey= DummyProjectionKey("projection1")
-        val projectionHandle = SimpleProjectionHandler<DummyProjection>(repositoryProjection,projectionKey)
+        val projectionHandle = SimpleProjectionHandler<DummyProjection>(repositoryProjection, projectionKey)
 
-        val repositoryWithSub = InMemoryEventStoreRepository<DummyAggregate>("InMemoryEventStoreRepositoryTest"){
-            DummyAggregate.empty(it)
-        }
-        repositoryWithSub.subscribe(projectionHandle)
+        repository.subscribe(projectionHandle)
 
         val  identity= DummyIdentity(1)
         val uncommittedEvents= listOf<IDomainEvent>(DummyEvent(identity))
         val aggregate= DummyAggregate(identity,0, uncommittedEvents.toMutableList())
 
-        repositoryWithSub.save(aggregate, UUID.randomUUID())
+        //When
+        repository.save(aggregate, UUID.randomUUID())
 
+        //Then
         val actualProjection = repositoryProjection.getByKey(projectionKey)
         val expectedProjection = DummyProjection(projectionKey,1)
 
@@ -120,13 +150,14 @@ internal class InMemoryEventStoreRepositoryTest{
     }
 
 
-    data class DummyProjectionKey(val name: String ): IProjectionKey{
+    data class DummyProjectionKey(val name: String) : IProjectionKey {
         override fun key(): String = name
 
     }
-    data class DummyProjection(override val key: DummyProjectionKey,val receivedEvents: Int =0): IProjection{
+
+    data class DummyProjection(override val key: DummyProjectionKey, val receivedEvents: Int = 0) : IProjection {
         override fun applyEvent(event: IDomainEvent): DummyProjection {
-            return copy(receivedEvents = receivedEvents+1)
+            return copy(receivedEvents = receivedEvents + 1)
         }
     }
 

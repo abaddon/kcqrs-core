@@ -5,91 +5,131 @@ import io.github.abaddon.kcqrs.core.domain.messages.commands.ICommand
 import io.github.abaddon.kcqrs.core.domain.messages.events.EventHeader
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.persistence.InMemoryEventStoreRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@ExperimentalCoroutinesApi
 internal class SimpleAggregateCommandHandlerTest {
+    private val testDispatcher = UnconfinedTestDispatcher()
+    private val testScope = TestScope(testDispatcher)
+    private lateinit var repository: InMemoryEventStoreRepository<DummyAggregate>
 
-    private val repository = InMemoryEventStoreRepository<DummyAggregate>("SimpleAggregateCommandHandlerTest") {
-        DummyAggregate.empty(it)
+    private lateinit var dummyAggregateCommandHandler: SimpleAggregateCommandHandler<DummyAggregate>
+
+    @BeforeEach
+    fun setup() {
+        repository = InMemoryEventStoreRepository(
+            "SimpleAggregateCommandHandlerTest",
+            { DummyAggregate.empty(it) },
+            testDispatcher
+        )
+        dummyAggregateCommandHandler = SimpleAggregateCommandHandler(repository, testDispatcher);
     }
-    private val dummyAggregateCommandHandler = SimpleAggregateCommandHandler<DummyAggregate>(repository)
+
+    @AfterEach
+    fun tearDown() {
+        repository.cleanup()
+    }
+
 
     @Test
-    fun `Given a command to create an aggregate when the AggregateCommandHandler receive it, then the aggregate is on the repository`() {
-        val aggregateId = DummyIdentity(1)
-        val cmd1 = NewDummyAggregateCommand(aggregateId)
-        runBlocking {
-            when(dummyAggregateCommandHandler.handle(cmd1)){
+    fun `Given a command to create an aggregate when the AggregateCommandHandler receive it, then the aggregate is on the repository`() =
+        testScope.runTest {
+            // Given
+            val aggregateId = DummyIdentity(1)
+            val cmd1 = NewDummyAggregateCommand(aggregateId)
+
+            //When
+            when (dummyAggregateCommandHandler.handle(cmd1)) {
                 is Result.Valid -> assert(true)
                 is Result.Invalid -> assert(false)
             }
-            when(val result = repository.getById(aggregateId)){
+
+            //Then
+            when (val result = repository.getById(aggregateId)) {
                 is Result.Valid -> {
-                    assertEquals(aggregateId, result.value.id)
-                    assertEquals(0, result.value.version)
+                    assertThat(aggregateId).isEqualTo(result.value.id)
+                    assertThat(0).isEqualTo(result.value.version)
                 }
+
                 is Result.Invalid -> assert(false)
             }
+
         }
-    }
 
     @Test
-    fun `Given a command to update an aggregate when the AggregateCommandHandler receive it, then the aggregate on the repository is updated`() {
-        val aggregateId = DummyIdentity(2)
-        val cmd1 = NewDummyAggregateCommand(aggregateId)
-        val cmd2 = UpdateDummyAggregateCommand(aggregateId)
-        runBlocking {
-            when(dummyAggregateCommandHandler.handle(cmd1)){
+    fun `Given a command to update an aggregate when the AggregateCommandHandler receive it, then the aggregate on the repository is updated`() =
+        testScope.runTest {
+            //Given
+            val aggregateId = DummyIdentity(2)
+            val cmd1 = NewDummyAggregateCommand(aggregateId)
+            val cmd2 = UpdateDummyAggregateCommand(aggregateId)
+
+            //When
+            when (dummyAggregateCommandHandler.handle(cmd1)) {
                 is Result.Valid -> assert(true)
                 is Result.Invalid -> assert(false)
             }
-            when(dummyAggregateCommandHandler.handle(cmd2)){
+            when (dummyAggregateCommandHandler.handle(cmd2)) {
                 is Result.Valid -> assert(true)
                 is Result.Invalid -> assert(false)
             }
-            when(val result = repository.getById(aggregateId)){
+
+            //Then
+            when (val result = repository.getById(aggregateId)) {
                 is Result.Valid -> {
                     assertEquals(aggregateId, result.value.id)
                     assertEquals(1, result.value.version)
                 }
+
                 is Result.Invalid -> assert(false)
             }
+
         }
 
-
-    }
-
     @Test
-    fun `Given two commands to update an aggregate when the AggregateCommandHandler receive it, then the aggregate on the repository is updated`() {
-        val aggregateId = DummyIdentity(3)
-        val cmd1 = NewDummyAggregateCommand(aggregateId)
-        val cmd2 = UpdateDummyAggregateCommand(aggregateId)
-        val cmd3 = UpdateDummyAggregateCommand(aggregateId)
-        runBlocking {
-            when(dummyAggregateCommandHandler.handle(cmd1)){
+    fun `Given two commands to update an aggregate when the AggregateCommandHandler receive it, then the aggregate on the repository is updated`() =
+        testScope.runTest {
+            //Given
+            val aggregateId = DummyIdentity(3)
+            val cmd1 = NewDummyAggregateCommand(aggregateId)
+            val cmd2 = UpdateDummyAggregateCommand(aggregateId)
+            val cmd3 = UpdateDummyAggregateCommand(aggregateId)
+
+            //When
+            when (dummyAggregateCommandHandler.handle(cmd1)) {
                 is Result.Valid -> assert(true)
                 is Result.Invalid -> assert(false)
             }
-            when(dummyAggregateCommandHandler.handle(cmd2)){
+            when (dummyAggregateCommandHandler.handle(cmd2)) {
                 is Result.Valid -> assert(true)
                 is Result.Invalid -> assert(false)
             }
-            when(dummyAggregateCommandHandler.handle(cmd3)){
+            when (dummyAggregateCommandHandler.handle(cmd3)) {
                 is Result.Valid -> assert(true)
                 is Result.Invalid -> assert(false)
             }
-            when(val result = repository.getById(aggregateId)){
+
+            //Then
+            when (val result = repository.getById(aggregateId)) {
                 is Result.Valid -> {
                     assertEquals(aggregateId, result.value.id)
                     assertEquals(2, result.value.version)
                 }
+
                 is Result.Invalid -> assert(false)
             }
+
         }
-    }
 
     private data class NewDummyAggregateCommand(override val aggregateID: DummyIdentity) : ICommand<DummyAggregate> {
         override val messageId: UUID = UUID.randomUUID()
