@@ -26,10 +26,11 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
         uncommittedEvents: List<IDomainEvent>,
         header: Map<String, String>,
         currentVersion: Long
-    ) = withContext(coroutineContext) {
+    ): Result<Unit> = withContext(coroutineContext) {
         val currentEvents = storage.getOrDefault(streamName, listOf()).toMutableList()
         currentEvents.addAll(uncommittedEvents.toMutableList())
         storage[streamName] = currentEvents
+        Result.success(Unit)
     }
 
     override suspend fun load(streamName: String, startFrom: Long): List<IDomainEvent> = withContext(coroutineContext) {
@@ -42,7 +43,15 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
 
     override fun emptyAggregate(aggregateId: IIdentity): TAggregate = _emptyAggregate(aggregateId)
 
-    override suspend fun publish(events: List<IDomainEvent>) = withContext(coroutineContext){
-        projectionHandlers.forEach { projectionHandlers -> projectionHandlers.onEvents(events) }
-    }
+    override suspend fun publish(persistResult: Result<Unit>, events: List<IDomainEvent>): Result<Unit> =
+        withContext(coroutineContext) {
+            persistResult
+                .onSuccess {
+                    projectionHandlers.forEach { projectionHandlers -> projectionHandlers.onEvents(events) }
+                    Result.success(Unit)
+                }
+                .onFailure {
+                    persistResult
+                }
+        }
 }

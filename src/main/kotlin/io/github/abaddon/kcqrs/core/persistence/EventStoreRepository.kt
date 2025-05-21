@@ -2,13 +2,11 @@ package io.github.abaddon.kcqrs.core.persistence
 
 import io.github.abaddon.kcqrs.core.IAggregate
 import io.github.abaddon.kcqrs.core.IIdentity
-import io.github.abaddon.kcqrs.core.domain.Result
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.exceptions.AggregateVersionException
 import io.github.abaddon.kcqrs.core.helpers.foldEvents
 import io.github.abaddon.kcqrs.core.helpers.log
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.withContext
 import java.security.InvalidParameterException
@@ -17,7 +15,7 @@ import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 abstract class EventStoreRepository<TAggregate : IAggregate>(
-    dispatcher: CoroutineDispatcher = Dispatchers.IO
+    dispatcher: CoroutineDispatcher
 ) : IAggregateRepository<TAggregate> {
 
     companion object {
@@ -38,17 +36,18 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
         uncommittedEvents: List<IDomainEvent>,
         header: Map<String, String>,
         currentVersion: Long
-    )
+    ): Result<Unit>
 
-    protected open suspend fun publish(events: List<IDomainEvent>) = Unit
+    protected open suspend fun publish(persistResult: Result<Unit>, events: List<IDomainEvent>): Result<Unit> =
+        Result.success(Unit)
 
 
-    override suspend fun getById(aggregateId: IIdentity): Result<Exception, TAggregate> =
+    override suspend fun getById(aggregateId: IIdentity): Result<TAggregate> =
         withContext(coroutineContext) {
             getById(aggregateId, Long.MAX_VALUE)
         }
 
-    override suspend fun getById(aggregateId: IIdentity, version: Long): Result<Exception, TAggregate> =
+    override suspend fun getById(aggregateId: IIdentity, version: Long): Result<TAggregate> =
         withContext(coroutineContext) {
             try {
                 check(version > 0) { throw InvalidParameterException("Cannot get version <= 0. Current value: $version") }
@@ -58,8 +57,8 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
                 val hydratedAggregate = load(aggregateIdStreamName(aggregateId)).foldEvents(emptyAggregate, version)
 
                 when (hydratedAggregate.version != version) {
-                    true -> Result.Valid(hydratedAggregate)
-                    false -> Result.Invalid(
+                    true -> Result.success(hydratedAggregate)
+                    false -> Result.failure(
                         AggregateVersionException(
                             aggregateId,
                             hydratedAggregate::javaClass.name,
@@ -69,9 +68,9 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
                     )
                 }
             } catch (e: InvalidParameterException) {
-                Result.Invalid(e)
+                Result.failure(e)
             } catch (e: Exception) {
-                Result.Invalid(e)
+                Result.failure(e)
             }
 
         }
@@ -80,19 +79,21 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
         aggregate: TAggregate,
         commitID: UUID,
         updateHeaders: () -> Map<String, String>
-    ) = withContext(coroutineContext) {
+    ): Result<Unit> = withContext(coroutineContext) {
         val header: Map<String, String> = buildHeaders(aggregate, commitID, updateHeaders())
         val uncommittedEvents: List<IDomainEvent> = aggregate.uncommittedEvents()
         val currentVersion = aggregate.version - uncommittedEvents.size
         log.info("aggregate.version: ${aggregate.version}, uncommittedEvents.size: ${uncommittedEvents.size}, currentVersion: $currentVersion")
-        persist(aggregateIdStreamName(aggregate.id), uncommittedEvents, header, currentVersion)
-        publish(uncommittedEvents)
+
+        val persistResult = persist(aggregateIdStreamName(aggregate.id), uncommittedEvents, header, currentVersion)
+        publish(persistResult, uncommittedEvents)
     }
 
-    override suspend fun save(aggregate: TAggregate, commitID: UUID) =
+    override suspend fun save(aggregate: TAggregate, commitID: UUID) = withContext(coroutineContext) {
         save(aggregate, commitID) {
             mapOf()
         }
+    }
 
 
     private fun buildHeaders(

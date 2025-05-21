@@ -10,11 +10,11 @@ interface IAggregateCommandHandler<TAggregate : IAggregate> : CoroutineScope {
     val repository: IAggregateRepository<TAggregate>
     val dispatcher: CoroutineDispatcher
 
-    suspend fun handle(command: ICommand<TAggregate>): Result<Exception, TAggregate>
+    suspend fun handle(command: ICommand<TAggregate>): Result<TAggregate>
 
     suspend fun handle(
         command: ICommand<TAggregate>,
         updateHeaders: () -> Map<String, String>
-    ): Result<Exception, TAggregate>
+    ): Result<TAggregate>
 
 }

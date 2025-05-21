@@ -6,7 +6,6 @@ import io.github.abaddon.kcqrs.core.domain.messages.events.EventHeader
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.persistence.InMemoryEventStoreRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -49,22 +48,23 @@ internal class SimpleAggregateCommandHandlerTest {
             val cmd1 = NewDummyAggregateCommand(aggregateId)
 
             //When
-            when (dummyAggregateCommandHandler.handle(cmd1)) {
-                is Result.Valid -> assert(true)
-                is Result.Invalid -> assert(false)
-            }
-
-            //Then
-            when (val result = repository.getById(aggregateId)) {
-                is Result.Valid -> {
-                    assertThat(aggregateId).isEqualTo(result.value.id)
-                    assertThat(0).isEqualTo(result.value.version)
+            dummyAggregateCommandHandler.handle(cmd1)
+                .onFailure {
+                    println("error: $it")
+                    assert(false)
                 }
 
-                is Result.Invalid -> assert(false)
-            }
-
+            //Then
+            repository.getById(aggregateId)
+                .onSuccess { aggregate ->
+                    assertThat(aggregateId).isEqualTo(aggregate.id)
+                    assertThat(0).isEqualTo(aggregate.version)
+                }.onFailure {
+                    println("error: $it")
+                    assert(false)
+                }
         }
+
 
     @Test
     fun `Given a command to update an aggregate when the AggregateCommandHandler receive it, then the aggregate on the repository is updated`() =
@@ -75,25 +75,25 @@ internal class SimpleAggregateCommandHandlerTest {
             val cmd2 = UpdateDummyAggregateCommand(aggregateId)
 
             //When
-            when (dummyAggregateCommandHandler.handle(cmd1)) {
-                is Result.Valid -> assert(true)
-                is Result.Invalid -> assert(false)
-            }
-            when (dummyAggregateCommandHandler.handle(cmd2)) {
-                is Result.Valid -> assert(true)
-                is Result.Invalid -> assert(false)
-            }
-
-            //Then
-            when (val result = repository.getById(aggregateId)) {
-                is Result.Valid -> {
-                    assertEquals(aggregateId, result.value.id)
-                    assertEquals(1, result.value.version)
+            dummyAggregateCommandHandler.handle(cmd1)
+                .onFailure {
+                    println("error: $it")
+                    assert(false)
                 }
 
-                is Result.Invalid -> assert(false)
-            }
+            dummyAggregateCommandHandler.handle(cmd2)
+                .onFailure {
+                    println("error: $it")
+                    assert(false)
+                }
 
+            //Then
+            repository.getById(aggregateId)
+                .onSuccess { aggregate ->
+                    assertEquals(aggregateId, aggregate.id)
+                    assertEquals(1, aggregate.version)
+                }
+                .onFailure { assert(false) }
         }
 
     @Test
@@ -106,28 +106,29 @@ internal class SimpleAggregateCommandHandlerTest {
             val cmd3 = UpdateDummyAggregateCommand(aggregateId)
 
             //When
-            when (dummyAggregateCommandHandler.handle(cmd1)) {
-                is Result.Valid -> assert(true)
-                is Result.Invalid -> assert(false)
-            }
-            when (dummyAggregateCommandHandler.handle(cmd2)) {
-                is Result.Valid -> assert(true)
-                is Result.Invalid -> assert(false)
-            }
-            when (dummyAggregateCommandHandler.handle(cmd3)) {
-                is Result.Valid -> assert(true)
-                is Result.Invalid -> assert(false)
-            }
-
-            //Then
-            when (val result = repository.getById(aggregateId)) {
-                is Result.Valid -> {
-                    assertEquals(aggregateId, result.value.id)
-                    assertEquals(2, result.value.version)
+            dummyAggregateCommandHandler.handle(cmd1)
+                .onFailure {
+                    println("error: $it")
+                    assert(false)
+                }
+            dummyAggregateCommandHandler.handle(cmd2)
+                .onFailure {
+                    println("error: $it")
+                    assert(false)
+                }
+            dummyAggregateCommandHandler.handle(cmd3)
+                .onFailure {
+                    println("error: $it")
+                    assert(false)
                 }
 
-                is Result.Invalid -> assert(false)
-            }
+            //Then
+            repository.getById(aggregateId)
+                .onSuccess { aggregate ->
+                    assertEquals(aggregateId, aggregate.id)
+                    assertEquals(2, aggregate.version)
+                }
+                .onFailure { assert(false) }
 
         }
 

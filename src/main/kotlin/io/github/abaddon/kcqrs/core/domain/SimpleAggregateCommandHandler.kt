@@ -20,26 +20,46 @@ open class SimpleAggregateCommandHandler<TAggregate : IAggregate>(
     override suspend fun handle(
         command: ICommand<TAggregate>,
         updateHeaders: () -> Map<String, String>
-    ): Result<Exception, TAggregate> =
-        when (val actualAggregateResult = repository.getById(command.aggregateID)) {
-            is Result.Valid -> {
+    ): Result<TAggregate> {
+        return repository.getById(command.aggregateID)
+            .onSuccess { aggregate ->
                 try {
-                    val newAggregate = command.execute(actualAggregateResult.value)
+                    val newAggregate = command.execute(aggregate)
                     repository.save(newAggregate, UUID.randomUUID(), updateHeaders)
-                    onSuccess(newAggregate)
-                    Result.Valid(newAggregate)
+                        .onSuccess {
+                            onSuccess(newAggregate)
+                            Result.success(newAggregate)
+                        }
                 } catch (ex: Exception) {
-                    Result.Invalid(ex)
+                    Result.failure(ex)
                 }
             }
+            .onFailure {
+                return Result.failure(it)
+            }
+    }
 
-            is Result.Invalid -> actualAggregateResult
-        }
+//    when (
+//    val actualAggregateResult = repository.getById(command.aggregateID))
+//    {
+//        is actualAggregateResult.is -> {
+//        try {
+//            val newAggregate = command.execute(actualAggregateResult.value)
+//            repository.save(newAggregate, UUID.randomUUID(), updateHeaders)
+//            onSuccess(newAggregate)
+//            Result.Valid(newAggregate)
+//        } catch (ex: Exception) {
+//            Result.Invalid(ex)
+//        }
+//    }
+//
+//        is Result.Invalid -> actualAggregateResult
+
 
     open fun onSuccess(updatedAggregate: TAggregate) {}
     open fun onFailure(err: Exception) {}
 
-    override suspend fun handle(command: ICommand<TAggregate>): Result<Exception, TAggregate> =
+    override suspend fun handle(command: ICommand<TAggregate>): Result<TAggregate> =
         handle(command) { mapOf<String, String>() }
 
 }

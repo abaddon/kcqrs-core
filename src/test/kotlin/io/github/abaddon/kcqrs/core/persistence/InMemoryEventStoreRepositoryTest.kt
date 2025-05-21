@@ -2,7 +2,6 @@ package io.github.abaddon.kcqrs.core.persistence
 
 import io.github.abaddon.kcqrs.core.IIdentity
 import io.github.abaddon.kcqrs.core.domain.AggregateRoot
-import io.github.abaddon.kcqrs.core.domain.Result
 import io.github.abaddon.kcqrs.core.domain.messages.events.EventHeader
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.projections.IProjection
@@ -46,8 +45,9 @@ internal class InMemoryEventStoreRepositoryTest {
         val aggregateId = DummyIdentity(1)
 
         val aggregate = repository.getById(aggregateId)
-        assert(aggregate is Result.Valid<DummyAggregate>)
-        assertEquals((aggregate as Result.Valid<DummyAggregate>).value, repository.emptyAggregate(aggregateId))
+
+        assert(aggregate.isSuccess)
+        assertEquals(aggregate.getOrThrow(), repository.emptyAggregate(aggregateId))
     }
 
     @Test
@@ -70,9 +70,9 @@ internal class InMemoryEventStoreRepositoryTest {
             repository.save(aggregateToPersit, UUID.randomUUID())
 
             // Then
-            val aggregateFoundResult = repository.getById(identity) as Result.Valid<DummyAggregate>
-            assertThat(aggregateFoundResult.value.version).isEqualTo(2)
-            assertThat(aggregateFoundResult.value.uncommittedEvents).isEmpty()
+            val aggregateFoundResult = repository.getById(identity)
+            assertThat(aggregateFoundResult.getOrThrow().version).isEqualTo(2)
+            assertThat(aggregateFoundResult.getOrThrow().uncommittedEvents).isEmpty()
         }
 
     @Test
@@ -87,9 +87,9 @@ internal class InMemoryEventStoreRepositoryTest {
             repository.save(aggregate, UUID.randomUUID())
 
             // Then
-            val aggregateFoundResult = repository.getById(identity) as Result.Valid<DummyAggregate>
-            assertThat(aggregateFoundResult.value.version).isEqualTo(0)
-            assertThat(aggregateFoundResult.value.uncommittedEvents).isEmpty()
+            val aggregateFoundResult = repository.getById(identity)
+            assertThat(aggregateFoundResult.getOrThrow().version).isEqualTo(0)
+            assertThat(aggregateFoundResult.getOrThrow().uncommittedEvents).isEmpty()
 
         }
 
@@ -107,46 +107,45 @@ internal class InMemoryEventStoreRepositoryTest {
 
             // When
             //Persist the last event
-            when (val resultGet = repository.getById(identity)) {
-                is Result.Invalid -> assert(false)
-                is Result.Valid -> {
-                    val aggregateLoaded = resultGet.value
-                    val uncommittedAggregate =
-                        aggregateLoaded.copy(uncommittedEvents = uncommittedEvents.toMutableList())
+            repository.getById(identity)
+                .onSuccess { aggregateLoaded ->
+                    val uncommittedAggregate = aggregateLoaded
+                        .copy(uncommittedEvents = uncommittedEvents.toMutableList())
                     repository.save(uncommittedAggregate, UUID.randomUUID())
                 }
-            }
+                .onFailure { assert(false) }
+
 
             // Then
-            val aggregateFoundResult = repository.getById(identity) as Result.Valid<DummyAggregate>
-            assertThat(aggregateFoundResult.value.version).isEqualTo(3)
-            assertThat(aggregateFoundResult.value.uncommittedEvents).isEmpty()
+            val aggregateFoundResult = repository.getById(identity)
+            assertThat(aggregateFoundResult.getOrThrow().version).isEqualTo(3)
+            assertThat(aggregateFoundResult.getOrThrow().uncommittedEvents).isEmpty()
         }
 
 
     @Test
     fun `given a projectionHandler when an event is persisted then it's published`() = testScope.runTest {
         //Given
-        val repositoryProjection = InMemoryProjectionRepository<DummyProjection>(){
-            DummyProjection(it as DummyProjectionKey,0)
+        val repositoryProjection = InMemoryProjectionRepository<DummyProjection>() {
+            DummyProjection(it as DummyProjectionKey, 0)
         }
-        val projectionKey= DummyProjectionKey("projection1")
+        val projectionKey = DummyProjectionKey("projection1")
         val projectionHandle = SimpleProjectionHandler<DummyProjection>(repositoryProjection, projectionKey)
 
         repository.subscribe(projectionHandle)
 
-        val  identity= DummyIdentity(1)
-        val uncommittedEvents= listOf<IDomainEvent>(DummyEvent(identity))
-        val aggregate= DummyAggregate(identity,0, uncommittedEvents.toMutableList())
+        val identity = DummyIdentity(1)
+        val uncommittedEvents = listOf<IDomainEvent>(DummyEvent(identity))
+        val aggregate = DummyAggregate(identity, 0, uncommittedEvents.toMutableList())
 
         //When
         repository.save(aggregate, UUID.randomUUID())
 
         //Then
         val actualProjection = repositoryProjection.getByKey(projectionKey)
-        val expectedProjection = DummyProjection(projectionKey,1)
+        val expectedProjection = DummyProjection(projectionKey, 1)
 
-        assertEquals(expectedProjection,actualProjection)
+        assertEquals(expectedProjection, actualProjection)
     }
 
 
