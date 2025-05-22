@@ -45,13 +45,9 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
 
     override suspend fun publish(persistResult: Result<Unit>, events: List<IDomainEvent>): Result<Unit> =
         withContext(coroutineContext) {
+            if (persistResult.isSuccess) {
+                projectionHandlers.forEach { projectionHandlers -> projectionHandlers.onEvents(events) }
+            }
             persistResult
-                .onSuccess {
-                    projectionHandlers.forEach { projectionHandlers -> projectionHandlers.onEvents(events) }
-                    Result.success(Unit)
-                }
-                .onFailure {
-                    persistResult
-                }
         }
 }

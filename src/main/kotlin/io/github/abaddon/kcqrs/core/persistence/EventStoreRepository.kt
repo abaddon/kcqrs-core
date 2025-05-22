@@ -79,14 +79,18 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
         aggregate: TAggregate,
         commitID: UUID,
         updateHeaders: () -> Map<String, String>
-    ): Result<Unit> = withContext(coroutineContext) {
+    ): Result<TAggregate> = withContext(coroutineContext) {
         val header: Map<String, String> = buildHeaders(aggregate, commitID, updateHeaders())
         val uncommittedEvents: List<IDomainEvent> = aggregate.uncommittedEvents()
         val currentVersion = aggregate.version - uncommittedEvents.size
         log.info("aggregate.version: ${aggregate.version}, uncommittedEvents.size: ${uncommittedEvents.size}, currentVersion: $currentVersion")
 
         val persistResult = persist(aggregateIdStreamName(aggregate.id), uncommittedEvents, header, currentVersion)
-        publish(persistResult, uncommittedEvents)
+        if(persistResult.isSuccess) {
+            publish(persistResult, uncommittedEvents)
+        }
+
+        Result.success(aggregate)
     }
 
     override suspend fun save(aggregate: TAggregate, commitID: UUID) = withContext(coroutineContext) {

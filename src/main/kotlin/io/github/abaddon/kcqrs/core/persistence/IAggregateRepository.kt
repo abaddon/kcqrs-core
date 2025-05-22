@@ -16,8 +16,8 @@ interface IAggregateRepository<TAggregate : IAggregate> {
 
     suspend fun getById(aggregateId: IIdentity, version: Long): Result<TAggregate>
 
-    suspend fun save(aggregate: TAggregate, commitID: UUID, updateHeaders: () -> Map<String, String>): Result<Unit>
+    suspend fun save(aggregate: TAggregate, commitID: UUID, updateHeaders: () -> Map<String, String>): Result<TAggregate>
 
-    suspend fun save(aggregate: TAggregate, commitID: UUID): Result<Unit>
+    suspend fun save(aggregate: TAggregate, commitID: UUID): Result<TAggregate>
 
 }
