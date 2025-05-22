@@ -6,9 +6,8 @@ import io.github.abaddon.kcqrs.core.persistence.IAggregateRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 
-interface IAggregateCommandHandler<TAggregate : IAggregate> : CoroutineScope {
+interface IAggregateCommandHandler<TAggregate : IAggregate>  {
     val repository: IAggregateRepository<TAggregate>
-    val dispatcher: CoroutineDispatcher
 
     suspend fun handle(command: ICommand<TAggregate>): Result<TAggregate>
 

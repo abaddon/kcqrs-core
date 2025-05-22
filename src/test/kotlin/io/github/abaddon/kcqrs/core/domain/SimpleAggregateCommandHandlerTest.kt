@@ -10,7 +10,6 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import java.util.*
 import kotlin.test.Test
@@ -32,11 +31,6 @@ internal class SimpleAggregateCommandHandlerTest {
             testDispatcher
         )
         dummyAggregateCommandHandler = SimpleAggregateCommandHandler(repository, testDispatcher);
-    }
-
-    @AfterEach
-    fun tearDown() {
-        repository.cleanup()
     }
 
 
@@ -134,17 +128,25 @@ internal class SimpleAggregateCommandHandlerTest {
 
     private data class NewDummyAggregateCommand(override val aggregateID: DummyIdentity) : ICommand<DummyAggregate> {
         override val messageId: UUID = UUID.randomUUID()
-        override fun execute(currentAggregate: DummyAggregate?): DummyAggregate {
-            return DummyAggregate.create(aggregateID, 0)
+        override fun execute(currentAggregate: DummyAggregate?): Result<DummyAggregate> {
+            return try {
+                Result.success(DummyAggregate.create(aggregateID, 0))
+            } catch (ex: Exception) {
+                Result.failure(ex)
+            }
         }
 
     }
 
     private data class UpdateDummyAggregateCommand(override val aggregateID: DummyIdentity) : ICommand<DummyAggregate> {
         override val messageId: UUID = UUID.randomUUID()
-        override fun execute(currentAggregate: DummyAggregate?): DummyAggregate {
-            require(currentAggregate != null)
-            return currentAggregate.increaseVersion()
+        override fun execute(currentAggregate: DummyAggregate?): Result<DummyAggregate> {
+            return try {
+                require(currentAggregate != null)
+                Result.success(currentAggregate.increaseVersion())
+            } catch (ex: Exception) {
+                Result.failure(ex)
+            }
         }
 
     }

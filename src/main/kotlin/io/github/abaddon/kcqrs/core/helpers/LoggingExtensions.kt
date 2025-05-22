@@ -5,14 +5,6 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 
-// Extension property for any class
-val <T : Any> T.log: Logger
-    get() = LoggerFactory.getLogger(this::class.java)
-
-// Extension property for KClass
-val <T : Any> KClass<T>.log: Logger
-    get() = LoggerFactory.getLogger(this::class.java)
-
 object LoggerFactory {
     private val loggerCache = ConcurrentHashMap<String, Logger>()
 

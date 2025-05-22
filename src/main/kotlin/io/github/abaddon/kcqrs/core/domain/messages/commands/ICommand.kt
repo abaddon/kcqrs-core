@@ -7,5 +7,5 @@ import io.github.abaddon.kcqrs.core.domain.messages.IMessage
 interface ICommand<A: IAggregate> : IMessage{
     val aggregateID: IIdentity
 
-    fun execute(currentAggregate: A?): A
+    fun execute(currentAggregate: A?): Result<A>
 }

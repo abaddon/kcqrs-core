@@ -12,7 +12,6 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -31,13 +30,8 @@ internal class InMemoryEventStoreRepositoryTest {
         repository = InMemoryEventStoreRepository(
             "InMemoryEventStoreRepositoryTest",
             { DummyAggregate.empty(it) },
-            testDispatcher
+            testScope.coroutineContext
         )
-    }
-
-    @AfterEach
-    fun tearDown() {
-        repository.cleanup()
     }
 
     @Test

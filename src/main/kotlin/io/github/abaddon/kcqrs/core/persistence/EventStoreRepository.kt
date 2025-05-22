@@ -4,10 +4,9 @@ import io.github.abaddon.kcqrs.core.IAggregate
 import io.github.abaddon.kcqrs.core.IIdentity
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.exceptions.AggregateVersionException
+import io.github.abaddon.kcqrs.core.helpers.LoggerFactory.log
+import io.github.abaddon.kcqrs.core.helpers.flatMap
 import io.github.abaddon.kcqrs.core.helpers.foldEvents
-import io.github.abaddon.kcqrs.core.helpers.log
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.withContext
 import java.security.InvalidParameterException
 import java.time.Instant
@@ -15,7 +14,7 @@ import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 abstract class EventStoreRepository<TAggregate : IAggregate>(
-    dispatcher: CoroutineDispatcher
+    protected val coroutineContext: CoroutineContext
 ) : IAggregateRepository<TAggregate> {
 
     companion object {
@@ -24,13 +23,9 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
         const val AGGREGATE_TYPE_HEADER = "AggregateTypeName"
     }
 
-    // Create a dedicated coroutine scope for this repository
-    private val job = SupervisorJob()
-    val coroutineContext: CoroutineContext = job + dispatcher
-
     abstract fun aggregateIdStreamName(aggregateId: IIdentity): String
 
-    protected abstract suspend fun load(streamName: String, startFrom: Long = 0): List<IDomainEvent>
+    protected abstract suspend fun load(streamName: String, startFrom: Long = 0): Result<List<IDomainEvent>>
     protected abstract suspend fun persist(
         streamName: String,
         uncommittedEvents: List<IDomainEvent>,
@@ -38,7 +33,7 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
         currentVersion: Long
     ): Result<Unit>
 
-    protected open suspend fun publish(persistResult: Result<Unit>, events: List<IDomainEvent>): Result<Unit> =
+    protected open suspend fun publish(events: List<IDomainEvent>): Result<Unit> =
         Result.success(Unit)
 
 
@@ -49,13 +44,17 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
 
     override suspend fun getById(aggregateId: IIdentity, version: Long): Result<TAggregate> =
         withContext(coroutineContext) {
-            try {
+            val emptyAggregate = emptyAggregate(aggregateId)
+            runCatching {
                 check(version > 0) { throw InvalidParameterException("Cannot get version <= 0. Current value: $version") }
-
-                val emptyAggregate = emptyAggregate(aggregateId)
-
-                val hydratedAggregate = load(aggregateIdStreamName(aggregateId)).foldEvents(emptyAggregate, version)
-
+            }.flatMap {
+                log.debug("Loading aggregate with id: ${aggregateId.valueAsString()} and version: $version")
+                load(aggregateIdStreamName(aggregateId))
+            }.flatMap { domainEvents ->
+                log.debug("Loaded ${domainEvents.size} events for aggregate with id: ${aggregateId.valueAsString()}")
+                hydratedAggregate(emptyAggregate, version, domainEvents)
+            }.flatMap { hydratedAggregate ->
+                log.debug("Hydrated aggregate with id: ${aggregateId.valueAsString()} and version: ${hydratedAggregate.version}")
                 when (hydratedAggregate.version != version) {
                     true -> Result.success(hydratedAggregate)
                     false -> Result.failure(
@@ -67,13 +66,18 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
                         )
                     )
                 }
-            } catch (e: InvalidParameterException) {
-                Result.failure(e)
-            } catch (e: Exception) {
-                Result.failure(e)
             }
-
         }
+
+
+    private fun hydratedAggregate(
+        initial: TAggregate,
+        currentVersion: Long,
+        domainEvents: List<IDomainEvent>
+    ): Result<TAggregate> = runCatching {
+        domainEvents.foldEvents(initial, currentVersion)
+    }
+
 
     override suspend fun save(
         aggregate: TAggregate,
@@ -83,14 +87,16 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
         val header: Map<String, String> = buildHeaders(aggregate, commitID, updateHeaders())
         val uncommittedEvents: List<IDomainEvent> = aggregate.uncommittedEvents()
         val currentVersion = aggregate.version - uncommittedEvents.size
-        log.info("aggregate.version: ${aggregate.version}, uncommittedEvents.size: ${uncommittedEvents.size}, currentVersion: $currentVersion")
+        log.info("Saving aggregate ${aggregate.id} version: ${aggregate.version}, uncommittedEvents.size: ${uncommittedEvents.size}, currentVersion: $currentVersion")
 
-        val persistResult = persist(aggregateIdStreamName(aggregate.id), uncommittedEvents, header, currentVersion)
-        if(persistResult.isSuccess) {
-            publish(persistResult, uncommittedEvents)
-        }
-
-        Result.success(aggregate)
+        persist(aggregateIdStreamName(aggregate.id), uncommittedEvents, header, currentVersion)
+            .flatMap {
+                log.debug("Persisted ${uncommittedEvents.size} events for aggregate ${aggregate.id.valueAsString()}")
+                publish(uncommittedEvents)
+            }.flatMap {
+                log.debug("Published ${uncommittedEvents.size} events for aggregate ${aggregate.id.valueAsString()}")
+                Result.success(aggregate)
+            }
     }
 
     override suspend fun save(aggregate: TAggregate, commitID: UUID) = withContext(coroutineContext) {
@@ -110,11 +116,6 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
             Pair(COMMIT_DATE_HEADER, Instant.now().toString()),
             Pair(AGGREGATE_TYPE_HEADER, aggregate::class.simpleName.orEmpty()),
         )
-    }
-
-    // Method to release resources when a repository is no longer needed
-    fun cleanup() {
-        job.cancel()
     }
 
 }

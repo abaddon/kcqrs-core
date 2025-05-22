@@ -5,15 +5,14 @@ import io.github.abaddon.kcqrs.core.IIdentity
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.projections.IProjection
 import io.github.abaddon.kcqrs.core.projections.IProjectionHandler
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 class InMemoryEventStoreRepository<TAggregate : IAggregate>(
     private val _streamNameRoot: String,
     private val _emptyAggregate: (aggregateId: IIdentity) -> TAggregate,
-    dispatcher: CoroutineDispatcher = Dispatchers.IO
-) : EventStoreRepository<TAggregate>(dispatcher) {
+    coroutineContext: CoroutineContext
+) : EventStoreRepository<TAggregate>(coroutineContext) {
 
     private val storage = mutableMapOf<String, MutableList<IDomainEvent>>()
     private val projectionHandlers = mutableListOf<IProjectionHandler<*>>()
@@ -33,9 +32,12 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
         Result.success(Unit)
     }
 
-    override suspend fun load(streamName: String, startFrom: Long): List<IDomainEvent> = withContext(coroutineContext) {
-        storage.getOrDefault(streamName, listOf())
-    }
+    override suspend fun load(streamName: String, startFrom: Long): Result<List<IDomainEvent>> =
+        withContext(coroutineContext) {
+            runCatching {
+                storage.getOrDefault(streamName, listOf())
+            }
+        }
 
     override suspend fun <TProjection : IProjection> subscribe(projectionHandler: IProjectionHandler<TProjection>) {
         projectionHandlers.add(projectionHandler)
@@ -43,11 +45,10 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
 
     override fun emptyAggregate(aggregateId: IIdentity): TAggregate = _emptyAggregate(aggregateId)
 
-    override suspend fun publish(persistResult: Result<Unit>, events: List<IDomainEvent>): Result<Unit> =
+    override suspend fun publish(events: List<IDomainEvent>): Result<Unit> =
         withContext(coroutineContext) {
-            if (persistResult.isSuccess) {
+            runCatching {
                 projectionHandlers.forEach { projectionHandlers -> projectionHandlers.onEvents(events) }
             }
-            persistResult
         }
 }
