@@ -11,7 +11,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import java.util.*
+import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -30,7 +30,7 @@ internal class SimpleAggregateCommandHandlerTest {
             { DummyAggregate.empty(it) },
             testDispatcher
         )
-        dummyAggregateCommandHandler = SimpleAggregateCommandHandler(repository, testDispatcher);
+        dummyAggregateCommandHandler = SimpleAggregateCommandHandler(repository, testDispatcher)
     }
 
 
@@ -155,7 +155,7 @@ internal class SimpleAggregateCommandHandlerTest {
         override fun valueAsString(): String {
             return value.toString()
         }
-    };
+    }
 
     private data class DummyEvent(
         override val aggregateId: DummyIdentity

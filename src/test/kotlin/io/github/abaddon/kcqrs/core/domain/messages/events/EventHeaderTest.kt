@@ -4,7 +4,7 @@ import io.github.abaddon.kcqrs.core.domain.messages.HeadersType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.util.UUID
 
 
 internal class EventHeaderTest{
@@ -26,7 +26,7 @@ internal class EventHeaderTest{
 
     @Test
     fun `Given a correlationId when add it to the EventHeader then the EventHeader has the same correlationId`(){
-        val kClass = "AggregateRoot";
+        val kClass = "AggregateRoot"
         val correlationId = UUID.randomUUID()
         val eventHeader = EventHeader.create(kClass)
             .withCorrelationId(correlationId)
@@ -45,7 +45,7 @@ internal class EventHeaderTest{
 
     @Test
     fun `Given a who when add it to the EventHeader then the EventHeader has the same who`(){
-        val kClass = "AggregateRoot";
+        val kClass = "AggregateRoot"
         val correlationId = UUID.randomUUID()
         val who = "I don't know"
         val eventHeader = EventHeader.create(kClass)

@@ -4,7 +4,7 @@ import io.github.abaddon.kcqrs.core.IAggregate
 import io.github.abaddon.kcqrs.core.IIdentity
 import io.github.abaddon.kcqrs.core.projections.IProjection
 import io.github.abaddon.kcqrs.core.projections.IProjectionHandler
-import java.util.*
+import java.util.UUID
 
 interface IAggregateRepository<TAggregate : IAggregate> {
 

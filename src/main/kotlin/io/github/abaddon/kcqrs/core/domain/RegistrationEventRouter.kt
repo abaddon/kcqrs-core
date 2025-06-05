@@ -15,7 +15,7 @@ class RegistrationEventRouter: IRouteEvents {
 
 
     private val handlers: MutableMap<KType,(eventArgs: IEvent) -> IAggregate> = mutableMapOf()
-    private lateinit var regsitered: IAggregate;
+    private lateinit var registered: IAggregate
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun register(klass: KClass<*>, handler: (eventArgs: IEvent) -> IAggregate) {
@@ -23,7 +23,7 @@ class RegistrationEventRouter: IRouteEvents {
     }
 
     override fun register(aggregate: IAggregate) {
-        regsitered = aggregate;
+        registered = aggregate
     }
 
     override fun dispatch(eventMessage: IEvent): IAggregate {
@@ -31,7 +31,7 @@ class RegistrationEventRouter: IRouteEvents {
         val handler = handlers[eventMessage::class.starProjectedType]?.invoke(eventMessage)
         //val handler2: (eventArgs: DomainEvent) -> IAggregate = handlers.get(eventMessage::class.starProjectedType)
 
-        checkNotNull(handler){regsitered.throwHandlerNotFound(eventMessage)}
+        checkNotNull(handler){registered.throwHandlerNotFound(eventMessage)}
         return TODO()
     }
 }

@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 class ConventionEventRouter(private var throwOnApplyNotFound: Boolean) : IRouteEvents {
 
     private val handlers: MutableMap<String, (event: IEvent) -> IAggregate> = mutableMapOf()
-    private lateinit var registered: IAggregate;
+    private lateinit var registered: IAggregate
 
     constructor() : this(true)
 
@@ -45,13 +45,13 @@ class ConventionEventRouter(private var throwOnApplyNotFound: Boolean) : IRouteE
 
     override fun dispatch(eventMessage: IEvent): IAggregate {
         val handler = handlers[eventMessage::class.simpleName]
-        var newAggregate: IAggregate = registered;
+        var newAggregate: IAggregate = registered
         if(handler != null){
             newAggregate = handler(eventMessage)
         }else if(throwOnApplyNotFound){
             registered.throwHandlerNotFound(eventMessage)
         }
-         return newAggregate;
+         return newAggregate
     }
 
     private fun register(messageType: String, handler: (event: IEvent) -> IAggregate) {

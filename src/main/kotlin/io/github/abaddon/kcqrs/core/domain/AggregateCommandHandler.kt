@@ -6,7 +6,7 @@ import io.github.abaddon.kcqrs.core.helpers.LoggerFactory.log
 import io.github.abaddon.kcqrs.core.helpers.flatMap
 import io.github.abaddon.kcqrs.core.persistence.IAggregateRepository
 import kotlinx.coroutines.withContext
-import java.util.*
+import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
 abstract class AggregateCommandHandler<TAggregate : IAggregate>(

@@ -3,7 +3,7 @@ package io.github.abaddon.kcqrs.core.domain.messages.commands
 import io.github.abaddon.kcqrs.core.IIdentity
 import io.github.abaddon.kcqrs.core.domain.AggregateRoot
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 abstract class Command<A: AggregateRoot> private constructor(
     override val messageId: UUID,

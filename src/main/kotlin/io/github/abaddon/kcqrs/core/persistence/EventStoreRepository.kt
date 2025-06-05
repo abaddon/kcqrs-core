@@ -10,7 +10,7 @@ import io.github.abaddon.kcqrs.core.helpers.foldEvents
 import kotlinx.coroutines.withContext
 import java.security.InvalidParameterException
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
 abstract class EventStoreRepository<TAggregate : IAggregate>(

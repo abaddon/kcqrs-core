@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 internal class EntityTest{
     @Test
     fun `Given an identity when create the aggregate then the aggregate has the same identity`() {
-        val identity = DummyIdentity();
+        val identity = DummyIdentity()
         val actualEntity = DummyEntity(identity)
         val expectedIdentity = "1234"
 

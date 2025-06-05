@@ -4,7 +4,7 @@ import io.github.abaddon.kcqrs.core.domain.messages.HeadersType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.util.UUID
 
 internal class CommandHeadersTest{
 

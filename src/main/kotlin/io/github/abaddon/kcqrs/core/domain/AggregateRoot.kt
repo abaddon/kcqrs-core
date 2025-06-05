@@ -18,11 +18,11 @@ abstract class AggregateRoot(
     }
 
     fun <T:IEvent>register(kClass: KClass<T>,route : (eventArgs: IEvent) -> IAggregate ) {
-        registeredRoutes.register(kClass, route);
+        registeredRoutes.register(kClass, route)
     }
 
     override fun applyEvent(event: IEvent): IAggregate{
-        return registeredRoutes.dispatch(event);
+        return registeredRoutes.dispatch(event)
     }
 
     override fun uncommittedEvents(): List<IDomainEvent> {
@@ -36,7 +36,7 @@ abstract class AggregateRoot(
     protected fun raiseEvent(event: IDomainEvent): AggregateRoot {
         val updatedAggregate: AggregateRoot = applyEvent(event) as AggregateRoot
         updatedAggregate.uncommittedEvents.add(event)
-        return updatedAggregate;
+        return updatedAggregate
     }
 
 }

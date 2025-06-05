@@ -15,7 +15,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.util.UUID
 
 
 @ExperimentalCoroutinesApi
@@ -120,11 +120,11 @@ internal class InMemoryEventStoreRepositoryTest {
     @Test
     fun `given a projectionHandler when an event is persisted then it's published`() = testScope.runTest {
         //Given
-        val repositoryProjection = InMemoryProjectionRepository<DummyProjection>() {
+        val repositoryProjection = InMemoryProjectionRepository<DummyProjection>(testScope.coroutineContext) {
             DummyProjection(it as DummyProjectionKey, 0)
         }
         val projectionKey = DummyProjectionKey("projection1")
-        val projectionHandle = SimpleProjectionHandler<DummyProjection>(repositoryProjection, projectionKey)
+        val projectionHandle = SimpleProjectionHandler<DummyProjection>(repositoryProjection, projectionKey,testScope.coroutineContext)
 
         repository.subscribe(projectionHandle)
 
@@ -139,7 +139,7 @@ internal class InMemoryEventStoreRepositoryTest {
         val actualProjection = repositoryProjection.getByKey(projectionKey)
         val expectedProjection = DummyProjection(projectionKey, 1)
 
-        assertEquals(expectedProjection, actualProjection)
+        assertEquals(expectedProjection, actualProjection.getOrThrow())
     }
 
 
@@ -158,7 +158,7 @@ internal class InMemoryEventStoreRepositoryTest {
         override fun valueAsString(): String {
             return value.toString()
         }
-    };
+    }
 
     private data class DummyEvent(
         override val aggregateId: DummyIdentity

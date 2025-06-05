@@ -2,7 +2,6 @@ package io.github.abaddon.kcqrs.core.projections
 
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.persistence.IProjectionRepository
-import kotlinx.coroutines.runBlocking
 
 
 interface IProjectionHandler<TProjection : IProjection> {
@@ -11,20 +10,8 @@ interface IProjectionHandler<TProjection : IProjection> {
     val projectionKey: IProjectionKey
 
 
-    @Suppress("UNCHECKED_CAST")
-    fun onEvent(event: IDomainEvent) {
-        runBlocking {
-            val updatedProjection = repository
-                .getByKey(projectionKey)
-                .applyEvent(event) as TProjection
-            repository.save(updatedProjection, 0) //TODO offset to define how manage it
-        }
-    }
+    suspend fun onEvent(event: IDomainEvent): Result<Unit>
 
-    fun onEvents(events: List<IDomainEvent>) {
-        events.forEach { domainEvent ->
-            onEvent(domainEvent)
-        }
-    }
+    suspend fun onEvents(events: List<IDomainEvent>): Result<Unit>
 
 }

@@ -2,7 +2,7 @@ package io.github.abaddon.kcqrs.core.domain.messages.commands
 
 import io.github.abaddon.kcqrs.core.domain.messages.HeadersType
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 data class CommandHeaders(
     val standard: Map<String, String>,
@@ -13,7 +13,7 @@ data class CommandHeaders(
         who,
         correlationId,
         mapOf<String, String>()
-    );
+    )
 
     constructor (who: String, correlationId: UUID, custom: Map<String, String>) : this(
         mapOf<String, String>(

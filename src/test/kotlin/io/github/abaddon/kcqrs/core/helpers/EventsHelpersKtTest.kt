@@ -5,7 +5,7 @@ import io.github.abaddon.kcqrs.core.domain.AggregateRoot
 import io.github.abaddon.kcqrs.core.domain.messages.events.EventHeader
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 

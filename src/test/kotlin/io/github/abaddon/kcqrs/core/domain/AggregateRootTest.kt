@@ -7,14 +7,14 @@ import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.domain.messages.events.IEvent
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.util.UUID
 
 internal class AggregateRootTest {
 
     @Test
     fun `Given an identity when create the aggregate then the aggregate has the same identity`() {
-        val identity = FakeIdentity(1);
-        val version = 1L;
+        val identity = FakeIdentity(1)
+        val version = 1L
         val aggregate = DummyAggregate.create(identity, version)
 
         assertEquals(identity, aggregate.id)
@@ -24,14 +24,14 @@ internal class AggregateRootTest {
 
     @Test
     fun `Given an event registered when apply the event then the aggregate is updated`() {
-        val identity = FakeIdentity(1);
-        val version = 1L;
+        val identity = FakeIdentity(1)
+        val version = 1L
         val aggregate = DummyAggregate.create(identity, version)
 
         val expectedVersion = 2L
 
         val handler: (event: IEvent) -> IAggregate = { e: IEvent -> aggregate.executeEvent1(e as DummyEvent) }
-        aggregate.register(DummyEvent::class, handler);
+        aggregate.register(DummyEvent::class, handler)
 
         val updatedAggregate = aggregate.applyEvent(DummyEvent(identity))
         assertEquals(identity, updatedAggregate.id)
@@ -41,17 +41,17 @@ internal class AggregateRootTest {
 
     @Test
     fun `Given 2 events registered when apply 2 events then the aggregate is updated and there are not uncommittedEvents`() {
-        val identity = FakeIdentity(1);
-        val version = 1L;
+        val identity = FakeIdentity(1)
+        val version = 1L
         val aggregate = DummyAggregate.create(identity, version)
 
         val expectedVersion = 7L
 
         val handlerEvent1: (event: IEvent) -> IAggregate = { e: IEvent -> aggregate.executeEvent1(e as DummyEvent) }
-        aggregate.register(DummyEvent::class, handlerEvent1);
+        aggregate.register(DummyEvent::class, handlerEvent1)
 
         val handlerEvent2: (event: IEvent) -> IAggregate = { e: IEvent -> aggregate.executeEvent2(e as DummyEvent2) }
-        aggregate.register(DummyEvent2::class, handlerEvent2);
+        aggregate.register(DummyEvent2::class, handlerEvent2)
 
         val event1 = DummyEvent(identity)
         val event2 = DummyEvent2(identity)
@@ -70,8 +70,8 @@ internal class AggregateRootTest {
 
     @Test
     fun `Given an aggregate when call generateFakeEvent1() then the aggregate is updated and there is one uncommittedEvents`() {
-        val identity = FakeIdentity(1);
-        val version = 1L;
+        val identity = FakeIdentity(1)
+        val version = 1L
         val aggregate = DummyAggregate.create(identity, version)
 
         val expectedVersion = 2L
@@ -87,8 +87,8 @@ internal class AggregateRootTest {
 
     @Test
     fun `Given an aggregate with FakeEvent applied when call generateFakeEvent2() then the aggregate is updated and there are two uncommittedEvents`() {
-        val identity = FakeIdentity(1);
-        val version = 1L;
+        val identity = FakeIdentity(1)
+        val version = 1L
         val aggregate = DummyAggregate.create(identity, version)
 
         val expectedVersion = 7L
@@ -107,7 +107,7 @@ internal class AggregateRootTest {
         override fun valueAsString(): String {
             return value.toString()
         }
-    };
+    }
 
     private data class DummyAggregate(
         override val id: IIdentity,

@@ -6,9 +6,9 @@ abstract class Entity(identity: IIdentity){
     private val identity: IIdentity
 
     init {
-        this.identity = identity;
+        this.identity = identity
     }
 
-    fun identity(): IIdentity = this.identity;
+    fun identity(): IIdentity = this.identity
 
 }

@@ -7,7 +7,7 @@ import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.exceptions.HandlerForDomainEventNotFoundException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.util.*
+import java.util.UUID
 
 internal class AggregateHelpersKtTest {
     @Test
