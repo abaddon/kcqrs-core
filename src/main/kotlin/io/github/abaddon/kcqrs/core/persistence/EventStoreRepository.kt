@@ -7,10 +7,11 @@ import io.github.abaddon.kcqrs.core.exceptions.AggregateVersionException
 import io.github.abaddon.kcqrs.core.helpers.LoggerFactory.log
 import io.github.abaddon.kcqrs.core.helpers.flatMap
 import io.github.abaddon.kcqrs.core.helpers.foldEvents
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import java.security.InvalidParameterException
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 abstract class EventStoreRepository<TAggregate : IAggregate>(
@@ -25,7 +26,7 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
 
     abstract fun aggregateIdStreamName(aggregateId: IIdentity): String
 
-    protected abstract suspend fun load(streamName: String, startFrom: Long = 0): Result<List<IDomainEvent>>
+    protected abstract suspend fun loadEvents(streamName: String, startFrom: Long = 0): Result<Flow<IDomainEvent>>
     protected abstract suspend fun persist(
         streamName: String,
         uncommittedEvents: List<IDomainEvent>,
@@ -48,14 +49,14 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
             runCatching {
                 check(version > 0) { throw InvalidParameterException("Cannot get version <= 0. Current value: $version") }
             }.flatMap {
-                log.debug("Loading aggregate with id: ${aggregateId.valueAsString()} and version: $version")
-                load(aggregateIdStreamName(aggregateId))
+                log.debug("Loading aggregate with id: ${aggregateId.valueAsString()}")
+                loadEvents(aggregateIdStreamName(aggregateId))
             }.flatMap { domainEvents ->
-                log.debug("Loaded ${domainEvents.size} events for aggregate with id: ${aggregateId.valueAsString()}")
+                log.debug("Events loaded for aggregate with id: ${aggregateId.valueAsString()}")
                 hydratedAggregate(emptyAggregate, version, domainEvents)
             }.flatMap { hydratedAggregate ->
                 log.debug("Hydrated aggregate with id: ${aggregateId.valueAsString()} and version: ${hydratedAggregate.version}")
-                when (hydratedAggregate.version != version) {
+                when (version == Long.MAX_VALUE || hydratedAggregate.version == version) {
                     true -> Result.success(hydratedAggregate)
                     false -> Result.failure(
                         AggregateVersionException(
@@ -70,10 +71,10 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
         }
 
 
-    private fun hydratedAggregate(
+    private suspend fun hydratedAggregate(
         initial: TAggregate,
         currentVersion: Long,
-        domainEvents: List<IDomainEvent>
+        domainEvents: Flow<IDomainEvent>
     ): Result<TAggregate> = runCatching {
         domainEvents.foldEvents(initial, currentVersion)
     }

@@ -5,6 +5,8 @@ import io.github.abaddon.kcqrs.core.IIdentity
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.projections.IProjection
 import io.github.abaddon.kcqrs.core.projections.IProjectionHandler
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
@@ -32,10 +34,10 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
         Result.success(Unit)
     }
 
-    override suspend fun load(streamName: String, startFrom: Long): Result<List<IDomainEvent>> =
+    override suspend fun loadEvents(streamName: String, startFrom: Long): Result<Flow<IDomainEvent>> =
         withContext(coroutineContext) {
             runCatching {
-                storage.getOrDefault(streamName, listOf())
+                storage.getOrDefault(streamName, listOf()).asFlow()
             }
         }
 
