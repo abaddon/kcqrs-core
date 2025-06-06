@@ -27,10 +27,9 @@ internal class SimpleAggregateCommandHandlerTest {
     fun setup() {
         repository = InMemoryEventStoreRepository(
             "SimpleAggregateCommandHandlerTest",
-            { DummyAggregate.empty(it) },
-            testDispatcher
+            { DummyAggregate.empty(it) }
         )
-        dummyAggregateCommandHandler = SimpleAggregateCommandHandler(repository, testDispatcher)
+        dummyAggregateCommandHandler = SimpleAggregateCommandHandler(repository)
     }
 
 
@@ -161,7 +160,7 @@ internal class SimpleAggregateCommandHandlerTest {
         override val aggregateId: DummyIdentity
     ) : IDomainEvent {
         override val aggregateType: String = DummyAggregate::class.java.simpleName
-        override val version: Int = 1
+        override val version: Long = 1
         override val header: EventHeader = EventHeader.create(aggregateType)
         override val messageId: UUID = UUID.randomUUID()
     }

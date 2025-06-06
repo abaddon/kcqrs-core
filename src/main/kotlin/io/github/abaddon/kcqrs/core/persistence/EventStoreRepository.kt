@@ -7,16 +7,17 @@ import io.github.abaddon.kcqrs.core.exceptions.AggregateVersionException
 import io.github.abaddon.kcqrs.core.helpers.LoggerFactory.log
 import io.github.abaddon.kcqrs.core.helpers.flatMap
 import io.github.abaddon.kcqrs.core.helpers.foldEvents
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
 import java.security.InvalidParameterException
 import java.time.Instant
 import java.util.*
-import kotlin.coroutines.CoroutineContext
 
 abstract class EventStoreRepository<TAggregate : IAggregate>(
-    protected val coroutineContext: CoroutineContext
-) : IAggregateRepository<TAggregate> {
+    scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
+) : IAggregateRepository<TAggregate>, CoroutineScope by scope {
 
     companion object {
         const val COMMIT_ID_HEADER = "CommitId"
@@ -39,36 +40,34 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
 
 
     override suspend fun getById(aggregateId: IIdentity): Result<TAggregate> =
-        withContext(coroutineContext) {
-            getById(aggregateId, Long.MAX_VALUE)
-        }
+        getById(aggregateId, Long.MAX_VALUE)
 
-    override suspend fun getById(aggregateId: IIdentity, version: Long): Result<TAggregate> =
-        withContext(coroutineContext) {
-            val emptyAggregate = emptyAggregate(aggregateId)
-            runCatching {
-                check(version > 0) { throw InvalidParameterException("Cannot get version <= 0. Current value: $version") }
-            }.flatMap {
-                log.debug("Loading aggregate with id: ${aggregateId.valueAsString()}")
-                loadEvents(aggregateIdStreamName(aggregateId))
-            }.flatMap { domainEvents ->
-                log.debug("Events loaded for aggregate with id: ${aggregateId.valueAsString()}")
-                hydratedAggregate(emptyAggregate, version, domainEvents)
-            }.flatMap { hydratedAggregate ->
-                log.debug("Hydrated aggregate with id: ${aggregateId.valueAsString()} and version: ${hydratedAggregate.version}")
-                when (version == Long.MAX_VALUE || hydratedAggregate.version == version) {
-                    true -> Result.success(hydratedAggregate)
-                    false -> Result.failure(
-                        AggregateVersionException(
-                            aggregateId,
-                            hydratedAggregate::javaClass.name,
-                            hydratedAggregate.version,
-                            version
-                        )
+
+    override suspend fun getById(aggregateId: IIdentity, version: Long): Result<TAggregate> {
+        val emptyAggregate = emptyAggregate(aggregateId)
+        return runCatching {
+            check(version > 0) { throw InvalidParameterException("Cannot get version <= 0. Current value: $version") }
+        }.flatMap {
+            log.debug("Loading aggregate with id: ${aggregateId.valueAsString()}")
+            loadEvents(aggregateIdStreamName(aggregateId))
+        }.flatMap { domainEvents ->
+            log.debug("Events loaded for aggregate with id: ${aggregateId.valueAsString()}")
+            hydratedAggregate(emptyAggregate, version, domainEvents)
+        }.flatMap { hydratedAggregate ->
+            log.debug("Hydrated aggregate with id: ${aggregateId.valueAsString()} and version: ${hydratedAggregate.version}")
+            when (version == Long.MAX_VALUE || hydratedAggregate.version == version) {
+                true -> Result.success(hydratedAggregate)
+                false -> Result.failure(
+                    AggregateVersionException(
+                        aggregateId,
+                        hydratedAggregate::javaClass.name,
+                        hydratedAggregate.version,
+                        version
                     )
-                }
+                )
             }
         }
+    }
 
 
     private suspend fun hydratedAggregate(
@@ -79,18 +78,22 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
         domainEvents.foldEvents(initial, currentVersion)
     }
 
+    override suspend fun save(aggregate: TAggregate, commitID: UUID) =
+        save(aggregate, commitID) {
+            mapOf()
+        }
 
     override suspend fun save(
         aggregate: TAggregate,
         commitID: UUID,
         updateHeaders: () -> Map<String, String>
-    ): Result<TAggregate> = withContext(coroutineContext) {
+    ): Result<TAggregate> {
         val header: Map<String, String> = buildHeaders(aggregate, commitID, updateHeaders())
         val uncommittedEvents: List<IDomainEvent> = aggregate.uncommittedEvents()
         val currentVersion = aggregate.version - uncommittedEvents.size
         log.info("Saving aggregate ${aggregate.id} version: ${aggregate.version}, uncommittedEvents.size: ${uncommittedEvents.size}, currentVersion: $currentVersion")
 
-        persist(aggregateIdStreamName(aggregate.id), uncommittedEvents, header, currentVersion)
+        return persist(aggregateIdStreamName(aggregate.id), uncommittedEvents, header, currentVersion)
             .flatMap {
                 log.debug("Persisted ${uncommittedEvents.size} events for aggregate ${aggregate.id.valueAsString()}")
                 publish(uncommittedEvents)
@@ -99,13 +102,6 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
                 Result.success(aggregate)
             }
     }
-
-    override suspend fun save(aggregate: TAggregate, commitID: UUID) = withContext(coroutineContext) {
-        save(aggregate, commitID) {
-            mapOf()
-        }
-    }
-
 
     private fun buildHeaders(
         aggregate: TAggregate,

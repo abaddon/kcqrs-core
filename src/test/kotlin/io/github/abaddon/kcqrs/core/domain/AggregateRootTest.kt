@@ -7,7 +7,7 @@ import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.domain.messages.events.IEvent
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.util.UUID
+import java.util.*
 
 internal class AggregateRootTest {
 
@@ -140,7 +140,8 @@ internal class AggregateRootTest {
         }
 
         companion object {
-            fun create(id: IIdentity, version: Long): DummyAggregate = DummyAggregate(id, version, ArrayList<IDomainEvent>())
+            fun create(id: IIdentity, version: Long): DummyAggregate =
+                DummyAggregate(id, version, ArrayList<IDomainEvent>())
         }
     }
 
@@ -148,7 +149,7 @@ internal class AggregateRootTest {
         override val aggregateId: IIdentity
     ) : IDomainEvent {
         override val aggregateType: String = DummyAggregate::class.java.simpleName
-        override val version: Int = 1
+        override val version: Long = 1
         override val header: EventHeader = EventHeader.create("DummyAggregate")
         override val messageId: UUID = UUID.randomUUID()
     }
@@ -157,7 +158,7 @@ internal class AggregateRootTest {
         override val aggregateId: IIdentity
     ) : IDomainEvent {
         override val aggregateType: String = DummyAggregate::class.java.simpleName
-        override val version: Int = 1
+        override val version: Long = 1
         override val header: EventHeader = EventHeader.create("DummyAggregate")
         override val messageId: UUID = UUID.randomUUID()
     }

@@ -8,13 +8,11 @@ import io.github.abaddon.kcqrs.core.projections.IProjectionHandler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.CoroutineContext
 
 class InMemoryEventStoreRepository<TAggregate : IAggregate>(
     private val _streamNameRoot: String,
-    private val _emptyAggregate: (aggregateId: IIdentity) -> TAggregate,
-    coroutineContext: CoroutineContext
-) : EventStoreRepository<TAggregate>(coroutineContext) {
+    private val _emptyAggregate: (aggregateId: IIdentity) -> TAggregate
+) : EventStoreRepository<TAggregate>() {
 
     private val storage = mutableMapOf<String, MutableList<IDomainEvent>>()
     private val projectionHandlers = mutableListOf<IProjectionHandler<*>>()
@@ -27,11 +25,10 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
         uncommittedEvents: List<IDomainEvent>,
         header: Map<String, String>,
         currentVersion: Long
-    ): Result<Unit> = withContext(coroutineContext) {
+    ): Result<Unit> = runCatching {
         val currentEvents = storage.getOrDefault(streamName, listOf()).toMutableList()
         currentEvents.addAll(uncommittedEvents.toMutableList())
         storage[streamName] = currentEvents
-        Result.success(Unit)
     }
 
     override suspend fun loadEvents(streamName: String, startFrom: Long): Result<Flow<IDomainEvent>> =
@@ -48,9 +45,8 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
     override fun emptyAggregate(aggregateId: IIdentity): TAggregate = _emptyAggregate(aggregateId)
 
     override suspend fun publish(events: List<IDomainEvent>): Result<Unit> =
-        withContext(coroutineContext) {
-            runCatching {
-                projectionHandlers.forEach { projectionHandlers -> projectionHandlers.onEvents(events) }
-            }
+        runCatching {
+            projectionHandlers.forEach { projectionHandlers -> projectionHandlers.onEvents(events) }
         }
+
 }

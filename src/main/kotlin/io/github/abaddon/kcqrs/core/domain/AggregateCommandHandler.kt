@@ -5,13 +5,10 @@ import io.github.abaddon.kcqrs.core.domain.messages.commands.ICommand
 import io.github.abaddon.kcqrs.core.helpers.LoggerFactory.log
 import io.github.abaddon.kcqrs.core.helpers.flatMap
 import io.github.abaddon.kcqrs.core.persistence.IAggregateRepository
-import kotlinx.coroutines.withContext
-import java.util.UUID
-import kotlin.coroutines.CoroutineContext
+import java.util.*
 
 abstract class AggregateCommandHandler<TAggregate : IAggregate>(
     override val repository: IAggregateRepository<TAggregate>,
-    protected val coroutineContext: CoroutineContext
 ) : IAggregateCommandHandler<TAggregate> {
 
     override suspend fun handle(command: ICommand<TAggregate>): Result<TAggregate> =
@@ -20,9 +17,9 @@ abstract class AggregateCommandHandler<TAggregate : IAggregate>(
     override suspend fun handle(
         command: ICommand<TAggregate>,
         updateHeaders: () -> Map<String, String>
-    ): Result<TAggregate> = withContext(coroutineContext) {
+    ): Result<TAggregate> {
         log.debug("command ${command::class.java.simpleName} execution started for aggregate ${command.aggregateID.valueAsString()}")
-        repository.getById(command.aggregateID)
+        return repository.getById(command.aggregateID)
             .flatMap { existingAggregate ->
                 log.debug("Aggregate ${existingAggregate.id.valueAsString()} loaded from the repository")
                 command.execute(existingAggregate)

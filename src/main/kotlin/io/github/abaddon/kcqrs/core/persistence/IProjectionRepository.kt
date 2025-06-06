@@ -6,7 +6,7 @@ import io.github.abaddon.kcqrs.core.projections.IProjectionKey
 interface IProjectionRepository<TProjection: IProjection> {
     suspend fun getByKey(key: IProjectionKey):Result<TProjection>
 
-    suspend fun save(projection: TProjection, offset: Long):Result<Unit>
+    suspend fun save(projection: TProjection):Result<Unit>
 
     fun emptyProjection(key: IProjectionKey): TProjection
 

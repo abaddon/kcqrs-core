@@ -15,7 +15,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.UUID
+import java.time.Instant
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 
 @ExperimentalCoroutinesApi
@@ -24,13 +26,16 @@ internal class InMemoryEventStoreRepositoryTest {
     private val testScope = TestScope(testDispatcher)
     private lateinit var repository: InMemoryEventStoreRepository<DummyAggregate>
 
+    companion object {
+        private val  NOW = Instant.now()
+    }
+
 
     @BeforeEach
     fun setup() {
         repository = InMemoryEventStoreRepository(
             "InMemoryEventStoreRepositoryTest",
-            { DummyAggregate.empty(it) },
-            testScope.coroutineContext
+            { DummyAggregate.empty(it) }
         )
     }
 
@@ -120,16 +125,17 @@ internal class InMemoryEventStoreRepositoryTest {
     @Test
     fun `given a projectionHandler when an event is persisted then it's published`() = testScope.runTest {
         //Given
-        val repositoryProjection = InMemoryProjectionRepository<DummyProjection>(testScope.coroutineContext) {
+        val repositoryProjection = InMemoryProjectionRepository {
             DummyProjection(it as DummyProjectionKey, 0)
         }
         val projectionKey = DummyProjectionKey("projection1")
-        val projectionHandle = SimpleProjectionHandler<DummyProjection>(repositoryProjection, projectionKey,testScope.coroutineContext)
+        val projectionHandle = SimpleProjectionHandler<DummyProjection>(repositoryProjection, projectionKey)
 
         repository.subscribe(projectionHandle)
 
         val identity = DummyIdentity(1)
-        val uncommittedEvents = listOf<IDomainEvent>(DummyEvent(identity))
+        val event = DummyEvent(identity)
+        val uncommittedEvents = listOf<IDomainEvent>(event)
         val aggregate = DummyAggregate(identity, 0, uncommittedEvents.toMutableList())
 
         //When
@@ -137,7 +143,13 @@ internal class InMemoryEventStoreRepositoryTest {
 
         //Then
         val actualProjection = repositoryProjection.getByKey(projectionKey)
-        val expectedProjection = DummyProjection(projectionKey, 1)
+        val expectedProjection = DummyProjection(
+            projectionKey, 1,
+            lastUpdated = NOW,
+            lastProcessedEvent = ConcurrentHashMap<String, Long>().apply {
+                put(event.aggregateType, event.version)
+            }
+        )
 
         assertEquals(expectedProjection, actualProjection.getOrThrow())
     }
@@ -148,9 +160,19 @@ internal class InMemoryEventStoreRepositoryTest {
 
     }
 
-    data class DummyProjection(override val key: DummyProjectionKey, val receivedEvents: Int = 0) : IProjection {
+    data class DummyProjection(
+        override val key: DummyProjectionKey,
+        val receivedEvents: Int = 0,
+        override val lastUpdated: Instant = NOW,
+        override val lastProcessedEvent: ConcurrentHashMap<String, Long> = ConcurrentHashMap()
+    ) : IProjection {
         override fun applyEvent(event: IDomainEvent): DummyProjection {
             return copy(receivedEvents = receivedEvents + 1)
+        }
+
+        override fun withPosition(event: IDomainEvent): IProjection {
+            lastProcessedEvent[event.aggregateType] = event.version
+            return this
         }
     }
 
@@ -164,7 +186,7 @@ internal class InMemoryEventStoreRepositoryTest {
         override val aggregateId: DummyIdentity
     ) : IDomainEvent {
         override val aggregateType: String = DummyAggregate::class.java.simpleName
-        override val version: Int = 1
+        override val version: Long = 1
         override val header: EventHeader = EventHeader.create(aggregateType)
         override val messageId: UUID = UUID.randomUUID()
     }
