@@ -1,5 +1,5 @@
 # kotlin-cqrs (Kcqrs)
-[![Maven Central](https://img.shields.io/maven-metadata/v?color=40BA13&metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Fio%2Fgithub%2Fabaddon%2Fkcqrs%2Fkcqrs-core%2Fmaven-metadata.xml&versionPrefix=0.)](https://ossindex.sonatype.org/component/pkg:maven/io.github.abaddon.kcqrs/kcqrs-core)
+![Maven Central Version](https://img.shields.io/maven-central/v/io.github.abaddon.kcqrs/kcqrs-core?versionPrefix=0.&style=flat&label=version&color=green)
 [![Java CI with Gradle](https://github.com/abaddon/kotlin-cqrs/actions/workflows/gradle.yml/badge.svg)](https://github.com/abaddon/kotlin-cqrs/actions/workflows/gradle.yml)
 [![codecov](https://codecov.io/gh/abaddon/kcqrs-core/branch/main/graph/badge.svg?token=1N8KGK99QV)](https://codecov.io/gh/abaddon/kcqrs-core)
 
