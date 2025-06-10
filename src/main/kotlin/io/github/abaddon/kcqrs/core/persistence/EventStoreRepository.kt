@@ -7,17 +7,13 @@ import io.github.abaddon.kcqrs.core.exceptions.AggregateVersionException
 import io.github.abaddon.kcqrs.core.helpers.LoggerFactory.log
 import io.github.abaddon.kcqrs.core.helpers.flatMap
 import io.github.abaddon.kcqrs.core.helpers.foldEvents
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import java.security.InvalidParameterException
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 abstract class EventStoreRepository<TAggregate : IAggregate>(
-    scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
-) : IAggregateRepository<TAggregate>, CoroutineScope by scope {
+) : IAggregateRepository<TAggregate> {
 
     companion object {
         const val COMMIT_ID_HEADER = "CommitId"
@@ -78,7 +74,7 @@ abstract class EventStoreRepository<TAggregate : IAggregate>(
         domainEvents.foldEvents(initial, currentVersion)
     }
 
-    override suspend fun save(aggregate: TAggregate, commitID: UUID) =
+    override suspend fun save(aggregate: TAggregate, commitID: UUID): Result<TAggregate> =
         save(aggregate, commitID) {
             mapOf()
         }

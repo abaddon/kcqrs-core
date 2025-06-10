@@ -7,7 +7,6 @@ import io.github.abaddon.kcqrs.core.projections.IProjection
 import io.github.abaddon.kcqrs.core.projections.IProjectionHandler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.withContext
 
 class InMemoryEventStoreRepository<TAggregate : IAggregate>(
     private val _streamNameRoot: String,
@@ -32,10 +31,8 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
     }
 
     override suspend fun loadEvents(streamName: String, startFrom: Long): Result<Flow<IDomainEvent>> =
-        withContext(coroutineContext) {
-            runCatching {
-                storage.getOrDefault(streamName, listOf()).asFlow()
-            }
+        runCatching {
+            storage.getOrDefault(streamName, listOf()).asFlow()
         }
 
     override suspend fun <TProjection : IProjection> subscribe(projectionHandler: IProjectionHandler<TProjection>) {
