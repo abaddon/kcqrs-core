@@ -21,7 +21,7 @@ fun <TAggregate : IAggregate> Iterable<IDomainEvent>.foldEvents(initial: TAggreg
 @Suppress("UNCHECKED_CAST")
 suspend fun <TAggregate : IAggregate> Flow<IDomainEvent>.foldEvents(initial: TAggregate, version: Long): TAggregate {
     return this.fold(initial) { acc, ev ->
-        require(ev.aggregateId == acc.id) { "Each event should be part of the same aggregate. Found ${ev.aggregateId.valueAsString()} in ${acc.id.valueAsString()}" }
+        require(ev.aggregateId == acc.id || initial.id == acc.id) { "Each event should be part of the same aggregate. Found ${ev.aggregateId.valueAsString()} in ${acc.id.valueAsString()}" }
         if (version > acc.version) {
             acc.applyEvent(ev) as TAggregate
         } else {
