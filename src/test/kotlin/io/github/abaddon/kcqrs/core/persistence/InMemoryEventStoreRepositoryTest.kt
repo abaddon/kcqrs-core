@@ -6,7 +6,6 @@ import io.github.abaddon.kcqrs.core.domain.messages.events.EventHeader
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.projections.IProjection
 import io.github.abaddon.kcqrs.core.projections.IProjectionKey
-import io.github.abaddon.kcqrs.core.projections.SimpleProjectionHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -122,37 +121,37 @@ internal class InMemoryEventStoreRepositoryTest {
         }
 
 
-    @Test
-    fun `given a projectionHandler when an event is persisted then it's published`() = testScope.runTest {
-        //Given
-        val repositoryProjection = InMemoryProjectionRepository {
-            DummyProjection(it as DummyProjectionKey, 0)
-        }
-        val projectionKey = DummyProjectionKey("projection1")
-        val projectionHandle = SimpleProjectionHandler<DummyProjection>(repositoryProjection, projectionKey)
-
-        repository.subscribe(projectionHandle)
-
-        val identity = DummyIdentity(1)
-        val event = DummyEvent(identity)
-        val uncommittedEvents = listOf<IDomainEvent>(event)
-        val aggregate = DummyAggregate(identity, 0, uncommittedEvents.toMutableList())
-
-        //When
-        repository.save(aggregate, UUID.randomUUID())
-
-        //Then
-        val actualProjection = repositoryProjection.getByKey(projectionKey)
-        val expectedProjection = DummyProjection(
-            projectionKey, 1,
-            lastUpdated = NOW,
-            lastProcessedEvent = ConcurrentHashMap<String, Long>().apply {
-                put(event.aggregateType, event.version)
-            }
-        )
-
-        assertEquals(expectedProjection, actualProjection.getOrThrow())
-    }
+//    @Test
+//    fun `given a projectionHandler when an event is persisted then it's published`() = testScope.runTest {
+//        //Given
+//        val repositoryProjection = InMemoryProjectionRepository {
+//            DummyProjection(it as DummyProjectionKey, 0)
+//        }
+//        val projectionKey = DummyProjectionKey("projection1")
+//        val projectionHandle = SimpleProjectionHandler<DummyProjection>(repositoryProjection, projectionKey)
+//
+//        repository.subscribe(projectionHandle)
+//
+//        val identity = DummyIdentity(1)
+//        val event = DummyEvent(identity)
+//        val uncommittedEvents = listOf<IDomainEvent>(event)
+//        val aggregate = DummyAggregate(identity, 0, uncommittedEvents.toMutableList())
+//
+//        //When
+//        repository.save(aggregate, UUID.randomUUID())
+//
+//        //Then
+//        val actualProjection = repositoryProjection.getByKey(projectionKey)
+//        val expectedProjection = DummyProjection(
+//            projectionKey, 1,
+//            lastUpdated = NOW,
+//            lastProcessedEvent = ConcurrentHashMap<String, Long>().apply {
+//                put(event.aggregateType, event.version)
+//            }
+//        )
+//
+//        assertEquals(expectedProjection, actualProjection.getOrThrow())
+//    }
 
 
     data class DummyProjectionKey(val name: String) : IProjectionKey {

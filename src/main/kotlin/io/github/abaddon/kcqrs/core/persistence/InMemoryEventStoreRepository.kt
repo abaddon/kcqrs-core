@@ -3,8 +3,6 @@ package io.github.abaddon.kcqrs.core.persistence
 import io.github.abaddon.kcqrs.core.IAggregate
 import io.github.abaddon.kcqrs.core.IIdentity
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
-import io.github.abaddon.kcqrs.core.projections.IProjection
-import io.github.abaddon.kcqrs.core.projections.IProjectionHandler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 
@@ -14,7 +12,7 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
 ) : EventStoreRepository<TAggregate>() {
 
     private val storage = mutableMapOf<String, MutableList<IDomainEvent>>()
-    private val projectionHandlers = mutableListOf<IProjectionHandler<*>>()
+//    private val projectionHandlers = mutableListOf<IProjectionHandler<*>>()
 
     override fun aggregateIdStreamName(aggregateId: IIdentity): String =
         "${_streamNameRoot}.${aggregateId.valueAsString()}"
@@ -35,15 +33,15 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
             storage.getOrDefault(streamName, listOf()).asFlow()
         }
 
-    override suspend fun <TProjection : IProjection> subscribe(projectionHandler: IProjectionHandler<TProjection>) {
-        projectionHandlers.add(projectionHandler)
-    }
+//    override suspend fun <TProjection : IProjection> subscribe(projectionHandler: IProjectionHandler<TProjection>) {
+//        projectionHandlers.add(projectionHandler)
+//    }
 
     override fun emptyAggregate(aggregateId: IIdentity): TAggregate = _emptyAggregate(aggregateId)
 
-    override suspend fun publish(events: List<IDomainEvent>): Result<Unit> =
-        runCatching {
-            projectionHandlers.forEach { projectionHandlers -> projectionHandlers.onEvents(events) }
-        }
+//    override suspend fun publish(events: List<IDomainEvent>): Result<Unit> =
+//        runCatching {
+//            projectionHandlers.forEach { projectionHandlers -> projectionHandlers.onEvents(events) }
+//        }
 
 }

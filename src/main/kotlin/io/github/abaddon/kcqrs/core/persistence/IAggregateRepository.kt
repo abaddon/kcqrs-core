@@ -2,13 +2,9 @@ package io.github.abaddon.kcqrs.core.persistence
 
 import io.github.abaddon.kcqrs.core.IAggregate
 import io.github.abaddon.kcqrs.core.IIdentity
-import io.github.abaddon.kcqrs.core.projections.IProjection
-import io.github.abaddon.kcqrs.core.projections.IProjectionHandler
 import java.util.UUID
 
 interface IAggregateRepository<TAggregate : IAggregate> {
-
-    suspend fun <TProjection : IProjection> subscribe(projectionHandler: IProjectionHandler<TProjection>)
 
     fun emptyAggregate(aggregateId: IIdentity): TAggregate
 

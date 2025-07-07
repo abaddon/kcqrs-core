@@ -7,9 +7,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface IProjectionHandler<TProjection : IProjection> {
     val repository: IProjectionRepository<TProjection>
-    val projectionKey: IProjectionKey
 
-
+    fun getProjectionKey(event: IDomainEvent): IProjectionKey
     suspend fun onEvent(event: IDomainEvent): Result<Unit>
 
     suspend fun onEvents(events: List<IDomainEvent>): Result<Unit>

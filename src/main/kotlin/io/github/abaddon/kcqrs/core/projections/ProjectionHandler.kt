@@ -3,8 +3,16 @@ package io.github.abaddon.kcqrs.core.projections
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.helpers.LoggerFactory.log
 import io.github.abaddon.kcqrs.core.helpers.flatMap
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.fold
+import kotlinx.coroutines.isActive
 import kotlin.coroutines.cancellation.CancellationException
 
 abstract class ProjectionHandler<TProjection : IProjection>(
@@ -23,21 +31,37 @@ abstract class ProjectionHandler<TProjection : IProjection>(
         processEvents(events)
     }
 
-    protected suspend fun processEvents(events: Flow<IDomainEvent>): Result<Unit> {
-        return repository.getByKey(projectionKey)
-            .flatMap { currentProjection ->
-                val filteredEvents = filterProcessedEvents(currentProjection, events)
-                updateProjection(currentProjection, filteredEvents)
-            }.flatMap {
-                saveProjection(it)
-            }.onFailure { exception ->
-                stop(exception)
-            }
+    protected suspend fun processEvents(events: Flow<IDomainEvent>) {
+        events.collect { event ->
+            //TODO cache the projection to avoid retrieve it every time
+            repository.getByKey(getProjectionKey(event))
+                .flatMap { currentProjection ->
+                    val filteredEvent = filterProcessedEvent(currentProjection, event)
+                    if (filteredEvent == null) {
+                        log.debug("Skipping already processed event ${event.messageId} for projection ${currentProjection.key.key()}")
+                        return@collect
+                    }
+                    updateProjection(currentProjection, filteredEvent)
+                }.flatMap {
+                    saveProjection(it)
+                }.onFailure { exception ->
+                    stop(exception)
+                }
+        }
+
     }
 
     private fun filterProcessedEvents(currentProjection: TProjection, events: Flow<IDomainEvent>): Flow<IDomainEvent> =
         events.filter { event ->
             event.version > currentProjection.lastProcessedPositionOf(event.aggregateType)
+        }
+
+    private fun filterProcessedEvent(currentProjection: TProjection, event: IDomainEvent): IDomainEvent? =
+        if (event.version > currentProjection.lastProcessedPositionOf(event.aggregateType)) {
+            event
+        } else {
+            log.debug("Skipping already processed event ${event.messageId} for projection ${currentProjection.key.key()}")
+            null
         }
 
     @Suppress("UNCHECKED_CAST")
@@ -56,6 +80,20 @@ abstract class ProjectionHandler<TProjection : IProjection>(
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
+    private suspend fun updateProjection(
+        currentProjection: TProjection,
+        event: IDomainEvent
+    ): Result<TProjection> = runCatching {
+        try {
+            val updated = applyEventToProjection(currentProjection, event)
+            @Suppress("UNCHECKED_CAST")
+            updated.withPosition(event) as TProjection
+        } catch (e: Exception) {
+            handleEventError(currentProjection, event, e)
+        }
+    }
+
     protected open suspend fun applyEventToProjection(
         projection: TProjection,
         event: IDomainEvent
@@ -70,7 +108,7 @@ abstract class ProjectionHandler<TProjection : IProjection>(
         error: Exception
     ): TProjection {
         log.error(
-            "Failed to apply event ${event.messageId} to projection ${projectionKey.key()}",
+            "Failed to apply event ${event.messageId} to projection ${projection.key}",
             error
         )
         // Default: skip the event
@@ -83,13 +121,9 @@ abstract class ProjectionHandler<TProjection : IProjection>(
     ): Result<Unit> =
         repository.save(projection)
 
-    fun start() {
-        log.info("Starting projection handler for ${projectionKey.key()}")
-    }
-
     fun stop(exception: Throwable?) {
         if (isActive) {
-            val message = "Stopping projection handler for ${projectionKey.key()}"
+            val message = "Stopping projection handler"
             log.error(message)
             cancel(CancellationException(message, exception?.cause))
         }
