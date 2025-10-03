@@ -53,6 +53,22 @@ jobs:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_TOKEN: ${{ secrets.SONATYPE_TOKEN }}
 
+      - name: Print Published Snapshot Version
+        if: startsWith(github.ref, 'refs/heads/')
+        run: |
+          VERSION=$(./gradlew printVersion -q)
+          echo "✅ Successfully published snapshot version: $VERSION"
+          echo "📦 Artifact: io.github.abaddon.kcqrs:kcqrs-core:$VERSION"
+          echo "🔗 Repository: https://central.sonatype.com/repository/maven-snapshots/"
+          echo ""
+          echo "## 📦 Snapshot Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** \`$VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Artifact:** \`io.github.abaddon.kcqrs:kcqrs-core:$VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Repository:** [Maven Central Snapshots](https://central.sonatype.com/repository/maven-snapshots/)" >> $GITHUB_STEP_SUMMARY
+
       - name: Publish Release to Maven Central
         if: startsWith(github.ref, 'refs/tags/')
         run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
