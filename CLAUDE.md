@@ -1,3 +1,4 @@
+## Prompts
 - always think hard and produce a plan before execute any change
 - Always test any change
 
@@ -42,7 +43,7 @@ It provides the foundational components for implementing event-sourced, CQRS-bas
   - Raises domain events via `raiseEvent()`
   - Events are applied via convention-based routing (functions named `apply(event)`)
   - Maintains immutability - operations return new instances
-- **Event Router**: Uses `ConventionEventRouter` or `RegistrationEventRouter` to dispatch events to appropriate `apply()` functions
+- **Event Router**: Uses `ConventionEventRouter` to dispatch events to appropriate `apply()` functions
 
 ### Commands (Write Side)
 
