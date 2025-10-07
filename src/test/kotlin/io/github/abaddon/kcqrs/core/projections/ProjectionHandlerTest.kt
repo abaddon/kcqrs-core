@@ -34,7 +34,7 @@ internal class ProjectionHandlerTest {
     @Test
     fun `Given a projection handler when onEvent is called then projection is updated and saved`() =
         testScope.runTest {
-            val handler = TestProjectionHandler(repository)
+            val handler = SimpleProjectionHandler(repository, DummyProjectionKey("test-key"))
             val event = createDummyEvent(1, 1L)
 
             val result = handler.onEvent(event)
@@ -48,7 +48,7 @@ internal class ProjectionHandlerTest {
     @Test
     fun `Given a projection handler when onEvents list is called then all events are processed`() =
         testScope.runTest {
-            val handler = TestProjectionHandler(repository)
+            val handler = SimpleProjectionHandler(repository, DummyProjectionKey("test-key"))
             val events = listOf(
                 createDummyEvent(1, 1L),
                 createDummyEvent(2, 2L),
@@ -66,7 +66,7 @@ internal class ProjectionHandlerTest {
     @Test
     fun `Given a projection handler when onEvents flow is called then all events are processed`() =
         testScope.runTest {
-            val handler = TestProjectionHandler(repository)
+            val handler = SimpleProjectionHandler(repository, DummyProjectionKey("test-key"))
             val events = flowOf(
                 createDummyEvent(1, 1L),
                 createDummyEvent(2, 2L)
@@ -83,7 +83,7 @@ internal class ProjectionHandlerTest {
     @Test
     fun `Given a projection handler when duplicate event is sent then it is skipped`() =
         testScope.runTest {
-            val handler = TestProjectionHandler(repository)
+            val handler = SimpleProjectionHandler(repository, DummyProjectionKey("test-key"))
             val event1 = createDummyEvent(1, 1L)
             val event2 = createDummyEvent(2, 1L) // Same version
 
@@ -97,7 +97,7 @@ internal class ProjectionHandlerTest {
     @Test
     fun `Given a projection handler when events arrive out of order then only newer events are processed`() =
         testScope.runTest {
-            val handler = TestProjectionHandler(repository)
+            val handler = SimpleProjectionHandler(repository, DummyProjectionKey("test-key"))
             val event1 = createDummyEvent(1, 3L)
             val event2 = createDummyEvent(2, 2L) // Older version
             val event3 = createDummyEvent(3, 4L) // Newer version
@@ -129,7 +129,7 @@ internal class ProjectionHandlerTest {
     @Test
     fun `Given a projection handler when multiple aggregate types send events then positions are tracked separately`() =
         testScope.runTest {
-            val handler = TestProjectionHandler(repository)
+            val handler = SimpleProjectionHandler(repository, DummyProjectionKey("test-key"))
             val event1 = createDummyEvent(1, 1L, "AggregateType1")
             val event2 = createDummyEvent(2, 1L, "AggregateType2")
             val event3 = createDummyEvent(3, 2L, "AggregateType1")
@@ -181,15 +181,6 @@ internal class ProjectionHandlerTest {
         override fun withPosition(event: IDomainEvent): IProjection {
             lastProcessedEvent[event.aggregateType] = event.version
             return this
-        }
-    }
-
-    private class TestProjectionHandler(
-        override val repository: IProjectionRepository<DummyProjection>
-    ) : ProjectionHandler<DummyProjection>() {
-
-        override fun getProjectionKey(event: IDomainEvent): IProjectionKey {
-            return DummyProjectionKey("test-key")
         }
     }
 
