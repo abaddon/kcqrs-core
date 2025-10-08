@@ -1,7 +1,3 @@
-## Prompts
-- always think hard and produce a plan before execute any change
-- Always test any change
-
 ## Scope
 
 **kcqrs-core** is a Kotlin CQRS (Command Query Responsibility Segregation) library.
@@ -63,6 +59,28 @@ It provides the foundational components for implementing event-sourced, CQRS-bas
   2. Executes command on aggregate
   3. Saves resulting uncommitted events to repository
 - Handles correlation and transaction management
+
+### Queries (Read Side)
+
+#### 5a. **IQuery / Query** (`Query.kt`, `IQuery.kt`)
+- Represents a request for data from the read side (projections)
+- Contains:
+  - `messageId` - unique query identifier
+  - `queryHeaders` - metadata (user, correlation ID, etc.)
+  - `queryDate` - timestamp when query was created
+- Must implement `suspend fun execute(): Result<TResult>` with query logic
+- Returns typed result (projection data, DTO, or any transformed data)
+- Query receives required repositories via constructor injection
+- Can aggregate multiple projections or transform projection data
+
+#### 5b. **IQueryHandler** (`IQueryHandler.kt`)
+- Processes queries and returns requested data
+- **SimpleQueryHandler**: Standard implementation that:
+  1. Executes query by calling `query.execute()`
+  2. Logs query execution for observability
+  3. Returns result to caller
+- Simpler than CommandHandler - no state changes or persistence
+- Supports header enrichment for tracing
 
 ### Events (Source of Truth)
 
@@ -127,10 +145,10 @@ It provides the foundational components for implementing event-sourced, CQRS-bas
 
 ### Supporting Components
 
-#### 12. **EventHeader / CommandHeaders** (`EventHeader.kt`, `CommandHeaders.kt`)
-- Metadata for events and commands
+#### 12. **EventHeader / CommandHeaders / QueryHeaders** (`EventHeader.kt`, `CommandHeaders.kt`, `QueryHeaders.kt`)
+- Metadata for events, commands, and queries
 - Contains correlation IDs, user context, timestamps
-- Enables tracing and auditing
+- Enables tracing and auditing across write and read operations
 
 #### 13. **Result Helpers** (`ResultHelpers.kt`)
 - Functional error handling using `Result<T>` type
@@ -148,11 +166,20 @@ It provides the foundational components for implementing event-sourced, CQRS-bas
 6. EventStore publishes events to **ProjectionHandlers**
 
 ### Query Flow (Read Side)
+
+#### Projection Update Flow (Event-Driven)
 1. **ProjectionHandler** receives **DomainEvents** from EventStore
 2. ProjectionHandler retrieves **Projection** from **ProjectionRepository**
 3. Events applied to Projection via `applyEvent()`
 4. Updated Projection persisted to ProjectionRepository
-5. Client queries Projection directly (fast, denormalized reads)
+
+#### Query Execution Flow (Client-Driven)
+1. Client sends **Query** to **QueryHandler**
+2. QueryHandler delegates to `query.execute()`
+3. Query retrieves data from **ProjectionRepository** (or multiple repositories)
+4. Query transforms/aggregates projection data as needed
+5. Query returns typed result (projection data, DTO, or computed result)
+6. QueryHandler returns result to client (fast, denormalized reads)
 
 ## Design Principles
 
@@ -162,3 +189,7 @@ It provides the foundational components for implementing event-sourced, CQRS-bas
 - **Separation of Concerns**: Commands/writes separated from queries/reads
 - **Domain-Driven Design**: Aggregates encapsulate business logic and invariants
 - **Convention over Configuration**: Event routing uses naming conventions
+
+## Prompts
+- always think hard and produce a plan before execute any change
+- Always test any change
