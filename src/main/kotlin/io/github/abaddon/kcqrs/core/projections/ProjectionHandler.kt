@@ -1,7 +1,7 @@
 package io.github.abaddon.kcqrs.core.projections
 
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
-import io.github.abaddon.kcqrs.core.helpers.LoggerFactory.log
+import io.github.abaddon.kcqrs.core.helpers.KcqrsLoggerFactory.log
 import io.github.abaddon.kcqrs.core.helpers.flatMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

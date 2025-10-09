@@ -1,7 +1,7 @@
 package io.github.abaddon.kcqrs.core.domain
 
 import io.github.abaddon.kcqrs.core.domain.messages.queries.IQuery
-import io.github.abaddon.kcqrs.core.helpers.LoggerFactory.log
+import io.github.abaddon.kcqrs.core.helpers.KcqrsLoggerFactory.log
 
 class SimpleQueryHandler<TResult> : IQueryHandler<TResult> {
 

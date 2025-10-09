@@ -1,17 +1,9 @@
 package io.github.abaddon.kcqrs.core.helpers
 
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.reflect.KClass
+import org.slf4j.LoggerFactory as Slf4jLoggerFactory
 
-object LoggerFactory {
-    private val loggerCache = ConcurrentHashMap<String, Logger>()
-
+object KcqrsLoggerFactory {
     val <T : Any> T.log: Logger
-        get() = loggerCache.computeIfAbsent(this::class.qualifiedName ?: "missing_class") {
-            println("logger created for ${this::class.qualifiedName}")
-            LoggerFactory.getLogger(this::class.qualifiedName)
-        }
-
+        get() = Slf4jLoggerFactory.getLogger(this::class.qualifiedName ?: "missing_class")
 }
