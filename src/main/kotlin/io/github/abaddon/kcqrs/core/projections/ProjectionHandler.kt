@@ -56,7 +56,7 @@ abstract class ProjectionHandler<TProjection : IProjection>(
             event.version > currentProjection.lastProcessedPositionOf(event.aggregateType)
         }
 
-    private fun filterProcessedEvent(currentProjection: TProjection, event: IDomainEvent): IDomainEvent? =
+    override fun filterProcessedEvent(currentProjection: TProjection, event: IDomainEvent): IDomainEvent? =
         if (event.version > currentProjection.lastProcessedPositionOf(event.aggregateType)) {
             event
         } else {

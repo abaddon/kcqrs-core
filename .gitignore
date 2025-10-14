@@ -16,4 +16,4 @@ gradle-wrapper.properties
 /kcqrs-core/gradle/
 /.idea/
 /out/*
-/.claude/settings.local.json
+.claude/*

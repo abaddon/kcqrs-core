@@ -9,6 +9,9 @@ interface IProjectionHandler<TProjection : IProjection> {
     val repository: IProjectionRepository<TProjection>
 
     fun getProjectionKey(event: IDomainEvent): IProjectionKey
+
+    fun filterProcessedEvent(currentProjection: TProjection, event: IDomainEvent): IDomainEvent?
+
     suspend fun onEvent(event: IDomainEvent): Result<Unit>
 
     suspend fun onEvents(events: List<IDomainEvent>): Result<Unit>
