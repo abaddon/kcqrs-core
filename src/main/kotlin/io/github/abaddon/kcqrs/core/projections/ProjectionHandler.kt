@@ -3,21 +3,16 @@ package io.github.abaddon.kcqrs.core.projections
 import io.github.abaddon.kcqrs.core.domain.messages.events.IDomainEvent
 import io.github.abaddon.kcqrs.core.helpers.KcqrsLoggerFactory.log
 import io.github.abaddon.kcqrs.core.helpers.flatMap
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.fold
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import kotlin.coroutines.cancellation.CancellationException
 
 abstract class ProjectionHandler<TProjection : IProjection>(
-    scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    cacheMaxSize: Int = 1000
 ) : IProjectionHandler<TProjection>, CoroutineScope by scope {
+
+    private val projectionCache = ProjectionCache<TProjection>(maxSize = cacheMaxSize)
 
     override suspend fun onEvent(event: IDomainEvent): Result<Unit> = runCatching {
         processEvents(flowOf(event))
@@ -33,8 +28,7 @@ abstract class ProjectionHandler<TProjection : IProjection>(
 
     protected suspend fun processEvents(events: Flow<IDomainEvent>) {
         events.collect { event ->
-            //TODO cache the projection to avoid retrieve it every time
-            repository.getByKey(getProjectionKey(event))
+            getOrInitialiseProjection(getProjectionKey(event))
                 .flatMap { currentProjection ->
                     val filteredEvent = filterProcessedEvent(currentProjection, event)
                     if (filteredEvent == null) {
@@ -50,6 +44,25 @@ abstract class ProjectionHandler<TProjection : IProjection>(
         }
 
     }
+
+    private suspend fun getOrInitialiseProjection(projectionKey: IProjectionKey): Result<TProjection> {
+        projectionCache.get(projectionKey)?.let {
+            return Result.success(it)
+        }
+        return repository.getByKey(projectionKey)
+            .recoverCatching {
+                repository.emptyProjection(projectionKey)
+            }
+    }
+
+    private fun updateProjectionCache(projection: TProjection) {
+        projectionCache.put(projection.key, projection)
+    }
+
+    /**
+     * Returns cache statistics for monitoring and observability.
+     */
+    fun getCacheStats(): CacheStats = projectionCache.stats()
 
     private fun filterProcessedEvents(currentProjection: TProjection, events: Flow<IDomainEvent>): Flow<IDomainEvent> =
         events.filter { event ->
@@ -118,13 +131,17 @@ abstract class ProjectionHandler<TProjection : IProjection>(
 
     private suspend fun saveProjection(
         projection: TProjection
-    ): Result<Unit> =
-        repository.save(projection)
+    ): Result<Unit> {
+        return repository.save(projection)
+            .onSuccess { updateProjectionCache(projection) }
+    }
+
 
     fun stop(exception: Throwable?) {
         if (isActive) {
             val message = "Stopping projection handler"
             log.error(message)
+            projectionCache.clear() // Clean up cache resources
             cancel(CancellationException(message, exception?.cause))
         }
     }
