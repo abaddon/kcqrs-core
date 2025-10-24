@@ -239,8 +239,7 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
   override val log: Logger = LoggerFactory.getLogger(this.javaClass.simpleName)
   
   /** it's the logic to create the stream name  */
-  override fun aggregateIdStreamName(aggregateId: IIdentity): String =
-    "${_streamNameRoot}.${aggregateId.valueAsString()}"
+  override fun aggregateIdStreamName(aggregateId: IIdentity): String = _streamNameRoot
 
   /**
    * This method should be used only for testing purpose.
