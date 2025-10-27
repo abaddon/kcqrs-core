@@ -52,7 +52,7 @@ internal class InMemoryEventStoreRepositoryTest {
     fun `given an aggregateId when get the aggregateIdStream then the streamId contain the aggregateId`() {
         val identity = DummyIdentity(1)
         val actualStreamName = repository.aggregateIdStreamName(identity)
-        val expectedStreamName = "InMemoryEventStoreRepositoryTest"
+        val expectedStreamName = "InMemoryEventStoreRepositoryTest.${identity.valueAsString()}"
         assertEquals(expectedStreamName, actualStreamName)
     }
 

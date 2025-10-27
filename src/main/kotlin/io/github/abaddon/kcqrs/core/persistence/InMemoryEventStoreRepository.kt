@@ -15,7 +15,7 @@ class InMemoryEventStoreRepository<TAggregate : IAggregate>(
 //    private val projectionHandlers = mutableListOf<IProjectionHandler<*>>()
 
     override fun aggregateIdStreamName(aggregateId: IIdentity): String =
-        _streamNameRoot
+        "${_streamNameRoot}.${aggregateId.valueAsString()}"
 
     override suspend fun persist(
         streamName: String,
